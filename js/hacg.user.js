@@ -1,12 +1,9 @@
-/**
- * Created by pdk on 2016/2/17.
- */
 // ==UserScript==
-// @name         琉璃神社快速上车
+// @name         琉璃神社老司机：快速上车
 // @namespace    https://github.com/pdkst/MonkeyScript
 // @version      0.1096
 // @description  Don't panic.
-// @author       pdkst
+// @author       红领巾，pdkst
 // @include      *://hacg.riwee.com/wordpress/*
 // @include      *://www.hacg.me/wordpress/*
 // @include      *://www.hacg.in/wordpress/*
