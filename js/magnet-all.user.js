@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         动漫花园批量下载(dmhy)
 // @namespace    http://pdkst.github.io/magnet-all
-// @version      0.1
+// @version      0.2
 // @description  为动漫花园（share.dmhy.org）增加批量下载的功能
 // @author       pdkst
 // @match        *://share.dmhy.org/*
