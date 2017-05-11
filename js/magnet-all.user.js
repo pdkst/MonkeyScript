@@ -58,4 +58,4 @@ function dmhy() {
     };
 }
 new dmhy().init();
-console.log(dmhy);
+//console.log(dmhy);
