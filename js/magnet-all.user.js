@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         动漫花园批量下载(dmhy)
 // @namespace    http://pdkst.github.io/magnet-all
-// @version      0.3
+// @version      0.4
 // @description  为动漫花园（share.dmhy.org）增加批量下载的功能
 // @author       pdkst
 // @match        *://share.dmhy.org/*
@@ -10,6 +10,7 @@
 
 function dmhy() {
     this.debug = false;
+    var that = this;
     this.log = function(s){
         if(debug){
             console.log('started...');
@@ -22,8 +23,8 @@ function dmhy() {
         var tds = $('#topic_list tr td:nth-child(1)');
         tds.prepend('<input type="checkbox" class="magnet"/>');
         tds.click(function () {
-            gatherMagnet();
-            console.log(gatherMagnet());
+            that.gatherMagnet();
+            console.log(that.gatherMagnet());
         });
         $('.nav_title:eq(1) .fl,.nav_title:eq(2)').append('<a class="select-all">[全选]</a>');
         $('.select-all').click(function () {
@@ -36,7 +37,7 @@ function dmhy() {
         });
         $('.nav_title:eq(1) .fl,.nav_title:eq(2)').append('<a class="download-all" style="color:green;">[下载(点击或右键"复制链接")]</a>');
         $('.download-all').click(function (e) {
-            window.prompt("Copy to clipboard: Ctrl+C, Enter", gatherMagnet());
+            window.prompt("Copy to clipboard: Ctrl+C, Enter", that.gatherMagnet());
             e.preventDefault();
         });
 
@@ -50,7 +51,7 @@ function dmhy() {
         var magnets = [];
         $('input.magnet:checkbox:checked').each(function () {
             var magnetStr = $(this).parents('tr').find('a.download-arrow.arrow-magnet').attr('href');
-            magnets.push($('.is-sub-mag:checkbox:checked').length ? subMagnet(magnetStr) : magnetStr);
+            magnets.push($('.is-sub-mag:checkbox:checked').length ? that.subMagnet(magnetStr) : magnetStr);
         });
         var str = magnets.join(arguments[0] || '\n');
         $('.download-all').attr('href', str);
