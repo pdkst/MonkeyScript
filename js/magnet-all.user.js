@@ -33,7 +33,7 @@ function dmhy() {
             } else {
                 $('.magnet:checkbox').attr('checked', false);
             }
-            gatherMagnet();
+            that.gatherMagnet();
         });
         $('.nav_title:eq(1) .fl,.nav_title:eq(2)').append('<a class="download-all" style="color:green;">[下载(点击或右键"复制链接")]</a>');
         $('.download-all').click(function (e) {
