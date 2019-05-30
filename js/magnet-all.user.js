@@ -5,6 +5,7 @@
 // @description  为动漫花园（share.dmhy.org）增加批量下载的功能
 // @author       pdkst
 // @match        *://share.dmhy.org/*
+// @supportURL   https://github.com/pdkst/MonkeyScript/issues
 // @grant        none
 // ==/UserScript==
 
