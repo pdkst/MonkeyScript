@@ -6,12 +6,13 @@
 // @author       pdkst
 // @supportURL   https://github.com/pdkst/MonkeyScript/issues
 // @match        https://live.bilibili.com/*
+// @require      https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js
 // @grant        none
 // ==/UserScript==
 
 (function() {
     'use strict';
-    $(document).on('click', "body > div:nth-child(6) > div", function(e){
-        $('body > div:nth-child(6) > div').remove();
-    });
+    $(document).on('click', "body > div.link-popup-ctnr > div > div.body-merge.w-100.h-100.p-absolute.p-zero", function(e){
+        $('body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div.popup-btn-ctnr.t-center > button').click();
+    })
 })();
