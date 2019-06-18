@@ -14,5 +14,15 @@
     'use strict';
     $(document).on('click', "body > div.link-popup-ctnr > div > div.body-merge.w-100.h-100.p-absolute.p-zero", function(e){
         $('body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div.popup-btn-ctnr.t-center > button').click();
-    })
+    });
+    //setInterval(clickArea, 100 + Math.random() * 150);
+
+    function clickArea(){
+        //下方区域
+        $('#chat-popup-area-vm > div > div > div.main div').click();
+        //抽奖确认按钮
+        $('body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div.popup-btn-ctnr.t-center > button').click();
+        //其他确认按钮
+        $('body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div > div > button').click();
+    }
 })();
