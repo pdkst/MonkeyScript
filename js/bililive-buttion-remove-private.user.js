@@ -21,7 +21,7 @@
     clickArea();
     function clickArea(){
         //下方区域
-        $('#chat-popup-area-vm > div > div > div.main div').click();
+        //$('#chat-popup-area-vm > div > div > div.main div').click();
         //抽奖确认按钮
         $('body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div.popup-btn-ctnr.t-center > button').click();
         //其他确认按钮
