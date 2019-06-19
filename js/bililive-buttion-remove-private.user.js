@@ -30,11 +30,11 @@
     }
     //点击时移除相关礼物消息
     $(document).on('click', '#chat-history-list > div.chat-item.system-msg.border-box > div > a', function(){
-        var text = $(this).select('span:nth-child(4)').text();
+        var text = $(this).children('span:nth-child(4)').text();
         console.log('text = ' + text);
         var all = $('#chat-history-list > div > div > a');
         var filtered = all.filter(function(i, e){
-            return $(e).select('span:nth-child(4)').text() == text
+            return $(e).children('span:nth-child(4)').text() == text
         });
         console.log('剩余总共' + all.length + '个中的' + filtered.length + '个被移除了。');
         filtered.each(function(i, e){
