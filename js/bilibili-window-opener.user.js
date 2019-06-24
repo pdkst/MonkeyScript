@@ -15,7 +15,7 @@
         //循环打开礼物窗口
         setInterval(circleFunction, 1000);
     } else if(window.opener && srcArr.includes(window.opener.window.location.pathname)){
-        //被打开的窗口5秒后关闭
+        //被打开的窗口10秒后关闭
         setTimeout(window.close, 10000);
     }
 
@@ -26,7 +26,6 @@
             giftLinks.filter(function (i, e) { 
                 return i == 0;
             }).each(function (i, e) { 
-
                 var $e = $(e);
                 var href = $e.attr('href');
                 //console.log('href = ' + href);
