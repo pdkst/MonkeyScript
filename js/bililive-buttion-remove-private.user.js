@@ -12,7 +12,7 @@
 
 (function($) {
     'use strict';
-    $(document).on('click', "body > div.link-popup-ctnr > div > div.body-merge.w-100.h-100.p-absolute.p-zero", function(e){
+    $(document).on('click', "body > div.link-popup-ctnr > div > div.body-merge.w-100.h-100.p-absolute.p-zero", function(){
         //抽奖确认按钮
         var button = $('body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div.popup-btn-ctnr.t-center > button');
         //弹幕风暴输入框 body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div > div:nth-child(2) > input
@@ -23,7 +23,7 @@
         //其他确认按钮
         $('body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div > div > button').click();
     });
-    clickArea();
+
     function clickArea(){
         //下方区域
         $('#chat-popup-area-vm > div > div > div.main div').click();
@@ -46,4 +46,5 @@
             $(e).parent().parent().remove();
         });
     });
+    $(document).ready(clickArea);
 })(window.$ || window.jQuery);

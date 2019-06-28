@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      0.3
+// @version      0.5
 // @description  自动打开礼物（beta）
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -12,8 +12,8 @@
 (function ($) {
     'use strict';
     var srcArr = [];
-    srcArr.push('/3822389');
-    srcArr.push('/21304638');
+    srcArr.push('/3822389');//角龙
+    srcArr.push('/21304638');//狗妈
 
     function circleFunction() {
         var giftLinks = $('#chat-history-list > div.chat-item.system-msg.border-box > div > a');
@@ -23,10 +23,10 @@
                 return i === 0;
             }).each(function (i, e) {
                 var $e = $(e);
-                var href = $e.attr('href');
+                //var href = $e.attr('href');
                 //console.log('href = ' + href);
-                $e.click();
-                window.open(href, '_blank');
+                //window.open(href, '_blank');
+                $e.children(':first').click();
             });
         }
     }
