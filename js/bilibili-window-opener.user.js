@@ -22,8 +22,8 @@
             giftLinks.filter(function (i) {
                 return i === 0;
             }).each(function (i, e) {
-                var $e = $(e),
-                    href = $e.attr('href');
+                var $e = $(e);
+                var href = $e.attr('href');
                 //console.log('href = ' + href);
                 $e.click();
                 window.open(href, '_blank');
