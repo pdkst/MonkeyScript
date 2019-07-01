@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      0.7
+// @version      0.8
 // @description  自动打开礼物（beta）
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -23,46 +23,44 @@
         //仅保存7条
         if (openHistory.length > 7) {
             var shift = openHistory.shift();
-            console.log("shift = " + shift);
+            //console.log("shift = " + shift);
         }
-        if (giftLinks.length) {
-            var boxArr = giftLinks.filter(function (i, e) {
-                //过滤掉7秒内已打开的
-                var text = $(e).children('span:nth-child(4)').text();
-                return !openHistory.includes(text);
-            }).filter(function (i) {
-                //取第一条
-                return i === 0;
-            });
-            if(!boxArr.length){
-                var now = new Date();
-                //放入空占位
-                openHistory.push('' + now.getFullYear() + now.getMonth() + now.getDay() + now.getHours() + now.getMinutes() + now.getSeconds());
-            }
-            boxArr.each(function (i, e) {
-                var $e = $(e);
-                //var href = $e.attr('href');
-                //console.log('href = ' + href);
-                //window.open(href, '_blank');
-                var text = $e.children('span:nth-child(4)').text();
-
-                //放入历史
-                openHistory.push(text);
-
-                //打开逻辑
-                $e.children(':first').click();
-                //移除当前消息框
-                console.log('open = ' + text);
-                var all = $('#chat-history-list > div > div > a');
-                var filtered = all.filter(function (i, e) {
-                    return $(e).children('span:nth-child(4)').text() == text
-                });
-                console.log('剩余总共' + all.length + '个中的' + filtered.length + '个被移除了。');
-                filtered.each(function (i, e) {
-                    $(e).parent().parent().remove();
-                });
-            });
+        var boxArr = giftLinks.filter(function (i, e) {
+            //过滤掉7秒内已打开的
+            var text = $(e).children('span:nth-child(4)').text();
+            return !openHistory.includes(text);
+        }).filter(function (i) {
+            //取第一条
+            return i === 0;
+        });
+        if (!boxArr.length) {
+            var now = new Date();
+            //放入空占位
+            openHistory.push('' + now.getFullYear() + now.getMonth() + now.getDay() + now.getHours() + now.getMinutes() + now.getSeconds());
         }
+        boxArr.each(function (i, e) {
+            var $e = $(e);
+            //var href = $e.attr('href');
+            //console.log('href = ' + href);
+            //window.open(href, '_blank');
+            var text = $e.children('span:nth-child(4)').text();
+
+            //放入历史
+            openHistory.push(text);
+
+            //打开逻辑
+            $e.children(':first').click();
+            //移除当前消息框
+            console.log('open = ' + text);
+            var all = $('#chat-history-list > div > div > a');
+            var filtered = all.filter(function (i, e) {
+                return $(e).children('span:nth-child(4)').text() == text
+            });
+            console.log('剩余总共' + all.length + '个中的' + filtered.length + '个被移除了。');
+            filtered.each(function (i, e) {
+                $(e).parent().parent().remove();
+            });
+        });
     }
     //页面加载完成后再开始执行
     $(document).ready(function () {
