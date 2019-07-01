@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      0.6
+// @version      0.7
 // @description  自动打开礼物（beta）
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -19,29 +19,35 @@
     function circleFunction() {
         var giftLinks = $('#chat-history-list > div.chat-item.system-msg.border-box > div > a');
         console.log('礼物总数：' + giftLinks.length);
+
+        //仅保存7条
+        if (openHistory.length > 7) {
+            var shift = openHistory.shift();
+            console.log("shift = " + shift);
+        }
         if (giftLinks.length) {
-            giftLinks.filter(function (i) {
+            var boxArr = giftLinks.filter(function (i, e) {
+                //过滤掉7秒内已打开的
+                var text = $(e).children('span:nth-child(4)').text();
+                return !openHistory.includes(text);
+            }).filter(function (i) {
+                //取第一条
                 return i === 0;
-            }).each(function (i, e) {
+            });
+            if(!boxArr.length){
+                var now = new Date();
+                //放入空占位
+                openHistory.push('' + now.getFullYear() + now.getMonth() + now.getDay() + now.getHours() + now.getMinutes() + now.getSeconds());
+            }
+            boxArr.each(function (i, e) {
                 var $e = $(e);
                 //var href = $e.attr('href');
                 //console.log('href = ' + href);
                 //window.open(href, '_blank');
                 var text = $e.children('span:nth-child(4)').text();
 
-                if(openHistory.includes(text)){
-                    //7秒内已打开
-                    console.log("includes = " + shift);
-                    return;
-                }else{
-                    //未打开放入历史
-                    openHistory.push(text);
-                    //仅保存7条
-                    if(openHistory.length > 7){
-                        var shift = openHistory.shift();
-                        console.log("shift = " + shift);
-                    }
-                }
+                //放入历史
+                openHistory.push(text);
 
                 //打开逻辑
                 $e.children(':first').click();
