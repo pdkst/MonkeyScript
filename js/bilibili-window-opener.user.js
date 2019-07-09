@@ -37,6 +37,7 @@
             var now = new Date();
             //放入空占位
             openHistory.push('' + now.getFullYear() + now.getMonth() + now.getDay() + now.getHours() + now.getMinutes() + now.getSeconds());
+            return;
         }
         boxArr.each(function (i, e) {
             var $e = $(e);
