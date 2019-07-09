@@ -12,6 +12,7 @@
 (function ($) {
     'use strict';
     var srcArr = [];
+
     var openHistory = [];
     srcArr.push('/3822389'); //角龙
     srcArr.push('/21304638'); //狗妈
