@@ -7,6 +7,8 @@
 // @match        *://live.bilibili.com/*
 // @require      https://static.hdslb.com/live-static/libs/jquery/jquery-1.11.3.min.js
 // @grant        none
+// @license      LGPLv3
+// @supportURL   https://github.com/pdkst/MonkeyScript/issues
 // ==/UserScript==
 
 (function ($) {

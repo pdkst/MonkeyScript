@@ -7,6 +7,7 @@
 // @match        *://share.dmhy.org/*
 // @supportURL   https://github.com/pdkst/MonkeyScript/issues
 // @grant        none
+// @license      LGPLv3
 // ==/UserScript==
 
 function dmhy() {
