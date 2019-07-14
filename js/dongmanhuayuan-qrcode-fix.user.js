@@ -1,11 +1,13 @@
 // ==UserScript==
-// @name         二维码修复
+// @name         dongmanhuayuan.com-二维码修复
 // @namespace    http://io.github.pdkst/dongmanhuayuan-qrcode-fix
 // @version      0.1
-// @description  修正产生的二维码
+// @description  修正dongmanhuayuan.com产生的二维码，二维码生成连接传值错误，已向管理员提交反馈
 // @author       pdkst
 // @match        https://www.dongmanhuayuan.com/detail/*.html
 // @grant        none
+// @license      LGPLv3
+// @supportURL   https://github.com/pdkst/MonkeyScript/issues
 // ==/UserScript==
 
 (function() {
