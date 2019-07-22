@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      0.11
+// @version      0.12
 // @description  自动打开礼物（beta），在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会打开关闭
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -16,12 +16,16 @@
 
     //可变更的配置
     var config = {
+        //打开时间
+        startTime: new Date().getTime(),
         //页面刷新时间 1 hour
         reloadTime: 1 * 60 * 60 * 1000,
         //最大历史数量
         maxHistory: 7,
         //窗口最大存在时间: 100s
-        maxAliveTime: 100 * 1000
+        maxAliveTime: 100 * 1000,
+        //窗口最小存活时间
+        minAliveTime: 3 * 1000
     }
 
     console.log("config = ", config);
@@ -31,9 +35,6 @@
     var srcArr = [];
     srcArr.push('/3822389'); //角龙
     srcArr.push('/21304638'); //狗妈
-
-    //页面打开时间
-    var startTime = new Date().getTime();
 
     function circleFunction() {
         var giftLinks = $('#chat-history-list > div.chat-item.system-msg.border-box > div > a');
@@ -59,7 +60,7 @@
             openHistory.push('' + now.getFullYear() + now.getMonth() + now.getDay() + now.getHours() + now.getMinutes() + now.getSeconds());
 
             //判断是否刷新一下当前待机页面
-            if (new Date().getTime() - startTime >= config.reloadTime) {
+            if (new Date().getTime() - config.startTime >= config.reloadTime) {
                 location.reload();
             }
 
@@ -105,9 +106,10 @@
 
             //检查礼物是否是否存在
             var intervalId = setInterval(function () {
+                var aliveTime = new Date().getTime() - config.startTime;
                 var isFinish = $("#chat-popup-area-vm > div.chat-popup-area-cntr > div.wait:visible").length === 1;
                 isFinish = isFinish || $("#chat-popup-area-vm > div.chat-popup-area-cntr").children().length === 0;
-                if (isFinish) {
+                if (isFinish && aliveTime >= config.minAliveTime) {
                     clearInterval(intervalId);
                     window.close();
                 }
