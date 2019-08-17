@@ -43,9 +43,10 @@
                 newDanmu.replace("【【", '【')
                 newDanmu.replace("】】", '】')
                 $danmuArea.val(newDanmu);
-                $danmuArea.trigger("change propertychange");
+                $danmuArea.trigger("change propertychange keyup keydown");
             }
-            console.log($sendButton.length)
+            
+            console.log($sendButton.length);
             //$sendButton.click();
             newButtonDisabledFunction();
         }
