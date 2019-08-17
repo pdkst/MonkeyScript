@@ -1,0 +1,52 @@
+<style>
+    .announcement-cntr {
+        min-height: 120px;
+        padding: 16px 20px;
+        background: #fff;
+        border: 1px solid #e9eaec;
+        border-radius: 12px;
+        margin-bottom: 10px;
+    }
+    .announcement-cntr .content{
+        padding-top: 12px;
+        border-top: 1px solid #e9eaec;
+        margin-top: 15px;
+        font-size: 14px;
+        color: #333;
+        letter-spacing: 0;
+        line-height: 21px;
+        word-wrap: break-word;
+    }
+    .announcement-cntr p {
+        margin: 0;
+    }
+    .announcement-cntr .header p {
+        font-size: 16px;
+        color: #23ade5;
+    }
+    .announcement-cntr .header p span {
+        float: right;
+        line-height: 18px;
+    }
+    .announcement-cntr .header p .icon-edit, .announcement-cntr .header p span {
+        display: inline-block;
+        color: #999;
+        font-size: 12px;
+    }
+</style>
+<div class="announcement-cntr">
+    <div class="header">
+        <p>VTUBER问候语 <span>${titleInfo}</span> </p>
+    </div>
+    <p class="content">
+        <ul>
+            <li>粉丝名：${funName}</li>
+            <li>粉丝标记：${emoji}</li>
+            <li>早上好：${ohayo}</li>
+            <li>中午好：${konichiwa}</li>
+            <li>晚上好：${konbawa}</li>
+            <li>结束语：${byebye}</li>
+            <li>应援语：${siha}</li>
+        </ul>
+    </p>
+</div>
