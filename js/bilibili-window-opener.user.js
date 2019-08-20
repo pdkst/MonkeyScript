@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      0.12
+// @version      0.13
 // @description  自动打开礼物（beta），在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会打开关闭
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -22,8 +22,8 @@
         reloadTime: 1 * 60 * 60 * 1000,
         //最大历史数量
         maxHistory: 7,
-        //窗口最大存在时间: 100s
-        maxAliveTime: 100 * 1000,
+        //窗口最大存在时间: 60s
+        maxAliveTime: 60 * 1000,
         //窗口最小存活时间
         minAliveTime: 3 * 1000
     }
@@ -107,8 +107,12 @@
             //检查礼物是否是否存在
             var intervalId = setInterval(function () {
                 var aliveTime = new Date().getTime() - config.startTime;
-                var isFinish = $("#chat-popup-area-vm > div.chat-popup-area-cntr > div.wait:visible").length === 1;
+                //抽奖待机区
+                var isFinish = $("#chat-popup-area-vm > div > div.wait:visible:has(:contains(已抽奖， 等待开奖))").length === 1;
+                //弹窗区是否已不显示
                 isFinish = isFinish || $("#chat-popup-area-vm > div.chat-popup-area-cntr").children().length === 0;
+                //检查弹幕是否已加载
+                isFinish = isFinish && $("#chat-history-list > div").length != 0;
                 if (isFinish && aliveTime >= config.minAliveTime) {
                     clearInterval(intervalId);
                     window.close();
