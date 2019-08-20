@@ -23,7 +23,7 @@
         //最大历史数量
         maxHistory: 7,
         //窗口最大存在时间: 60s
-        maxAliveTime: 60 * 1000,
+        maxAliveTime: 3 * 60 * 1000,
         //窗口最小存活时间
         minAliveTime: 3 * 1000
     }
