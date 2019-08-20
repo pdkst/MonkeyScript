@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      0.13
+// @version      0.14
 // @description  自动打开礼物（beta），在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会打开关闭
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -95,6 +95,27 @@
             });
         });
     }
+
+    //检查是否应该关闭窗口
+    function checkPresentWindow(config, intervalId) {
+        var aliveTime = new Date().getTime() - config.startTime;
+        //旧礼物抽奖待机区
+        var isFinish = $("#chat-popup-area-vm > div > div.wait:visible:has(:contains(已抽奖， 等待开奖))").length === 1;
+        //旧礼物弹窗区是否已不显示
+        isFinish = isFinish || $("#chat-popup-area-vm > div.chat-popup-area-cntr").children().length === 0;
+
+        //检查新礼物窗口是否已关闭
+        isFinish = isFinish && $("#chat-draw-area-vm > div > div.draw-full-cntr.show > div.function-bar").length == 0;
+
+        //检查弹幕是否已加载
+        isFinish = isFinish && $("#chat-history-list > div").length != 0;
+        
+        if (isFinish && aliveTime >= config.minAliveTime) {
+            clearInterval(intervalId);
+            window.close();
+        }
+    }
+
     //页面加载完成后再开始执行
     $("#chat-popup-area-vm").ready(function () {
         if (srcArr.includes(window.location.pathname)) {
@@ -105,20 +126,10 @@
             setTimeout(window.close, config.maxAliveTime);
 
             //检查礼物是否是否存在
-            var intervalId = setInterval(function () {
-                var aliveTime = new Date().getTime() - config.startTime;
-                //抽奖待机区
-                var isFinish = $("#chat-popup-area-vm > div > div.wait:visible:has(:contains(已抽奖， 等待开奖))").length === 1;
-                //弹窗区是否已不显示
-                isFinish = isFinish || $("#chat-popup-area-vm > div.chat-popup-area-cntr").children().length === 0;
-                //检查弹幕是否已加载
-                isFinish = isFinish && $("#chat-history-list > div").length != 0;
-                if (isFinish && aliveTime >= config.minAliveTime) {
-                    clearInterval(intervalId);
-                    window.close();
-                }
-            }, 3000)
+            var intervalId = setInterval(checkPresentWindow, 3000, config, intervalId);
         }
     });
 
+
 })(window.$ || window.jQuery);
+
