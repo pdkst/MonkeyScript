@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bilibili直播-移除增加亲密度确认按钮
 // @namespace    http://pdkst.github.io/
-// @version      0.7
+// @version      0.8
 // @description  当前直播间有舰长上舰时，增加亲密度时需要来回确认，十分不便，这个脚本将移除确认按钮的显示，免去确认的痛苦，快速连续获得亲密度；第一次时仍然会提示，但是不用管继续点，之后就不会出现了
 // @author       pdkst
 // @supportURL   https://github.com/pdkst/MonkeyScript/issues
@@ -39,6 +39,8 @@
     //礼物区
     function closePresentWin() {
         var $presentArea = $('#chat-popup-area-vm > div > div > div.main');
+        var $miniPresentArea = $('#chat-draw-area-vm > div > div.draw-full-cntr.show > div.function-bar.draw');
+        //旧礼物区域
         if($presentArea.length){
             //console.log("$presentArea = " + $presentArea.length);
             $presentArea.each(function(i,e) {
@@ -49,6 +51,14 @@
                     //$(e).children("div").click();
                     $(e).click();
                 }
+            });
+        }
+        //新礼物点击区
+        if ($miniPresentArea.length){
+            $miniPresentArea.each(function (i, e){
+                //点击区
+                console.log($(e).children().eq(1).text())
+                $(e).children().click();
             });
         }
     }
