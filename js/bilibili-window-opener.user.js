@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      0.15
+// @version      0.16
 // @description  自动打开礼物（beta），在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会打开关闭
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -98,6 +98,9 @@
 
     //检查是否应该关闭窗口
     function checkPresentWindow(config, intervalId) {
+        //暂停播放按钮
+        $('#js-player-decorator > div > div.bilibili-live-player-video-controller > div > div > div.bilibili-live-player-video-controller-left.clearfix > div.bilibili-live-player-video-controller-btn-item.bilibili-live-player-video-controller-start-btn > button[data-title=暂停]').click();
+            
         var aliveTime = new Date().getTime() - config.startTime;
         //旧礼物抽奖待机区
         var isFinish = $("#chat-popup-area-vm > div > div.wait:visible:has(:contains(已抽奖， 等待开奖))").length === 1;
@@ -124,9 +127,6 @@
         } else if (window.opener && srcArr.includes(window.opener.window.location.pathname)) {
             //被打开的窗口最多于100秒后关闭
             setTimeout(window.close, config.maxAliveTime);
-            //点击暂停播放按钮
-            var pauseButton = $('#js-player-decorator > div > div.bilibili-live-player-video-controller > div > div > div.bilibili-live-player-video-controller-left.clearfix > div.bilibili-live-player-video-controller-btn-item.bilibili-live-player-video-controller-start-btn > button[data-title=暂停]');
-            pauseButton.click();
             //检查礼物是否是否存在
             var intervalId = setInterval(checkPresentWindow, 3000, config, intervalId);
         }
