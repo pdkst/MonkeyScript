@@ -56,6 +56,7 @@ function GlobalVtuberConfig() {
         var config = {};
         config['/3822389'] = new VtuberConfig('黑白狐', '🐾', 'mahamaha', 'mahamaha', 'mahamaha', 'mabamaba', '❤🐾', 'VTUBER问候语', '2019-8-17 21:26:13');
         config['/14917277'] = new VtuberConfig('湊阿夸', '⚓', 'おはようござりました！', '', 'こんあくあ～', 'おつあくあ～', '❤⚓', 'VTUBER问候语', '2019-8-21 22:06:18');
+        config['/12770821'] = new VtuberConfig('小肉干', '✿', 'おはようござりました！', '', 'こんばんは', 'お疲れ様', '❤✿♪❀♪', 'VTUBER问候语', '2019-8-24 16:49:59');
         global_vtuber_config = config;
     }
     return config;
