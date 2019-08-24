@@ -109,6 +109,8 @@
 
         //检查新礼物窗口是否已关闭
         isFinish = isFinish && $("#chat-draw-area-vm > div > div.draw-full-cntr.show > div.function-bar").length == 0;
+        //超级迷你小图标
+        isFinish = isFinish && $("#chat-draw-area-vm > div > div.draw-fold-cntr.show").length == 0;
 
         //检查弹幕是否已加载
         isFinish = isFinish && $("#chat-history-list > div").length != 0;
