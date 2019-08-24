@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      0.16
+// @version      0.17
 // @description  自动打开礼物（beta），在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会打开关闭
 // @author       pdkst
 // @match        *://live.bilibili.com/*
