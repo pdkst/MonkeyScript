@@ -53,7 +53,6 @@ class Present {
 class PresentQueue {
     constructor() {
         this.queue = [];
-        this.presentRegex = /(\d+)个(.+)，点击前往TA的房间去抽奖吧/ig;
     }
 
     addPresent(e) {
@@ -77,7 +76,8 @@ class PresentQueue {
         }
     }
     addPresentByGiver(giver, liver, subfixStr, href) {
-        var matchArr = this.presentRegex.exec(subfixStr);
+        var presentRegex = /(\d+)个(.+)，点击前往TA的房间去抽奖吧/ig;
+        var matchArr = presentRegex.exec(subfixStr);
         console.log("match = " + matchArr);
         if (matchArr && matchArr.length == 3) {
             var presentNew = new Present(matchArr[2], this.getTime(matchArr[2]), giver, liver, href);
@@ -120,7 +120,7 @@ class PresentQueue {
         var now = new Date();
         switch (type) {
             case "摩天大楼":
-                now.setTime(now.getTime() + 2 * 1000);
+                now.setTime(now.getTime() + 60 * 1000);
                 return now;
             case "小电视飞船":
                 now.setTime(now.getTime() + 2 * 60 * 1000);
