@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         B站直播Vtuber问候语
 // @namespace    http://pdkst.github.io/
-// @version      0.1
+// @version      0.2
 // @description  显示配置的vtuber的问候语，每个vtuber都有独特的问候语，才不是不知道，只是打不出来~
 // @author       pdkst
 // @supportURL   https://github.com/pdkst/MonkeyScript/issues
@@ -54,7 +54,10 @@ var global_vtuber_config;
 function GlobalVtuberConfig() {
     if (!global_vtuber_config) {
         var config = {};
-        config['/3822389'] = new VtuberConfig('黑白狐', '🐾', 'mahamaha', 'mahamaha', 'mahamaha', 'mabamaba', '❤🐾', 'VTUBER问候语', '2019-8-17 21:26:13');
+        config['/3822389'] = new VtuberConfig('黑白狐', '🐾', 'mahamaha', 'mahamaha', 'mahamaha', 'mabamaba', '❤🐾♪', 'VTUBER问候语', '2019-8-17 21:26:13');
+        config['/14917277'] = new VtuberConfig('湊阿夸', '⚓', 'おはようござりました！', '', 'こんあくあ～', 'おつあくあ～', '❤⚓♪', 'VTUBER问候语', '2019-8-21 22:06:18');
+        config['/12770821'] = new VtuberConfig('小肉干', '✿', 'おはようござりました！', '', 'こんばんは', 'お疲れ様', '❤✿♪❀♪', 'VTUBER问候语', '2019-8-24 16:49:59');
+        config['/14052636'] = new VtuberConfig('Shiori', '🍄', 'おは堕天使*ଘ(੭*ˊᵕˋ)੭* ੈ🍄‧₊˚', '', 'ユメ堕つ', 'お疲れ様', '❤🍄♪', 'VTUBER问候语', '2019-9-7 23:04:08');
         global_vtuber_config = config;
     }
     return config;
