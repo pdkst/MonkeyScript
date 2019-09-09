@@ -180,8 +180,10 @@ class PresentQueue {
             }
         }
     }
-    removeDone(){
-        //TODO
+    removeDone() {
+        this.queue = this.queue.filter(function (value) {
+            return !value.done;
+        });
     }
 }
 
