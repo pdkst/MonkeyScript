@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.0.0
+// @version      1.1.0
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -33,7 +33,7 @@ class Present {
     }
 
     open() {
-        console.log("open ... " + this.path);
+        //console.log("open ... " + this.path);
         if (this.path && this.timeout() && !this.isDone()) {
             window.open(this.path, this.liver);
             return (this.done = true);
@@ -51,57 +51,34 @@ class Present {
  * 礼物队列
  */
 class PresentQueue {
-    constructor() {
+    constructor(name) {
         this.queue = [];
+        this.name = name || '';
     }
 
-    addPresent(e) {
-        var $e = $(e);
+    addPresent(text, href) {
+        console.log(text);
+        // 小电视等礼物
+        var present = this.addPresentByGiver(text, href);
+        if (present) {
+            return present;
+        }
 
-        if ($e.length) {
-            var $presentSpanSet = $e.children();
-            var href = $e.attr("href");
-            var giver = $presentSpanSet.eq(1).text();
-            var action = $presentSpanSet.eq(2).text();
-            var liver = $presentSpanSet.eq(3).text();
-            var subfixStr = $presentSpanSet.eq(4).text();
-            switch (action) {
-                case '送给':
-                    this.addPresentByGiver(giver, liver, subfixStr, href);
-                    break;
-                case '夺得':
-                    this.addPresentByHour(liver, giver, subfixStr, href);
-                    break;
-            }
+        present = this.addPresentByMember(text, href);
+        if (present) {
+            return present;
+        }
+
+        present = this.addPresentBySystem(text, href);
+        if (present) {
+            return present;
         }
     }
-    addPresentByGiver(giver, liver, subfixStr, href) {
-        var presentRegex = /(\d+)个(.+)，点击前往TA的房间去抽奖吧/ig;
-        var matchArr = presentRegex.exec(subfixStr);
-        console.log("match = " + matchArr);
-        if (matchArr && matchArr.length == 3) {
-            var presentNew = new Present(matchArr[2], this.getTime(matchArr[2]), giver, liver, href);
-            if (presentNew.pathname) {
-                var presentExists = this.queue.filter(function (e) {
-                    return e.pathname == presentNew.pathname;
-                });
-                if (!presentExists.length) {
-                    this.queue.push(presentNew);
-                    return presentNew;
-                }
-                else {
-                    console.log("Present Queue Exists ! " + giver + ' to ' + liver);
-                }
-            }
-        }
-        else {
-            debugger;
-        }
-    }
-    addPresentByHour(giver, liver, subfixStr, href) {
-        console.log("addPresentByHour = " + liver);
-
-        var presentNew = new Present("小时总榜", this.getTime("小时总榜"), giver, liver, href);
+    /**
+     * 添加新的礼物到队列中
+     * @param {Present} presentNew 新的礼物
+     */
+    addToQueue(presentNew) {
         if (presentNew.pathname) {
             var presentExists = this.queue.filter(function (e) {
                 return e.pathname == presentNew.pathname;
@@ -111,10 +88,70 @@ class PresentQueue {
                 return presentNew;
             }
             else {
-                console.log("Present Queue Exists ! " + giver + ' to ' + liver);
+                console.log("Present Queue Exists ! " + presentNew.giver + ' to ' + presentNew.liver);
             }
         }
     }
+    addPresentByGiver(text, href) {
+        var tvRegex = /(.+): (.+)送给(.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧/ig;
+        var matchArr = tvRegex.exec(text);
+        console.log("match = " + matchArr);
+        if (matchArr && matchArr.length == 6) {
+            var giver = matchArr[2];
+            var liver = matchArr[3];
+            var type = matchArr[5];
+            var presentNew = new Present(type, this.getTime(type), giver, liver, href);
+            return this.addToQueue(presentNew);
+        }
+        else {
+            debugger;
+        }
+    }
+    addPresentByMember(text, href) {
+        var memberRegex = /(.+)在(.+)的房间开通了(.+)并触发了抽奖，点击前往TA的房间去抽奖吧/ig;
+        var matchArr = memberRegex.exec(text);
+        if (matchArr && matchArr.length == 4) {
+            var giver = matchArr[1];
+            var liver = matchArr[2];
+            var type = matchArr[3];
+            console.log("addPresentByMember = " + liver);
+            var presentNew = new Present("会员", this.getTime("会员"), giver, liver, href);
+            return this.addToQueue(presentNew);
+        }
+        else {
+            debugger;
+        }
+    }
+    addPresentBySystem(text, href) {
+        var hourRegex = /恭喜(.+)夺得(.+)小时总榜第一名！赶快来围观吧~/ig;
+        var hourRegex2 = /恭喜主播(.+)获得上一周(.+)！哔哩哔哩 (゜-゜)つロ 干杯~/ig;
+        var matchArr = hourRegex.exec(text);
+        if (matchArr) {
+            var giver = "system";
+            var liver = matchArr[1];
+            var type = matchArr[2];
+            console.log("addPresentBySystem = " + liver);
+            var presentNew = new Present(type, this.getTime(type), giver, liver, href);
+            return this.addToQueue(presentNew);
+        } else {
+            matchArr = hourRegex2.exec(text);
+            if (matchArr) {
+                giver = "system";
+                liver = matchArr[1];
+                type = matchArr[2];
+                console.log("addPresentBySystem = " + liver);
+                presentNew = new Present(type, this.getTime(type), giver, liver, href);
+                return this.addToQueue(presentNew);
+            }
+            else {
+                debugger;
+            }
+        }
+    }
+    /**
+     * 根据类型获取时间
+     * @param {string} type 类型
+     */
     getTime(type) {
         console.log("type = " + type);
         var now = new Date();
@@ -143,6 +180,9 @@ class PresentQueue {
             }
         }
     }
+    removeDone(){
+        //TODO
+    }
 }
 
 (function ($) {
@@ -166,7 +206,7 @@ class PresentQueue {
 
     console.log("config = ", config);
 
-    const presentQueue = new PresentQueue();
+    const presentQueue = new PresentQueue(window.location.pathname);
 
     //待机页面
     var srcArr = [];
@@ -179,7 +219,10 @@ class PresentQueue {
         if (presentLinkArray.length) {
             console.log('现存礼物总数：' + presentLinkArray.length);
             presentLinkArray.each(function (_i, e) {
-                presentQueue.addPresent(e);
+                var $e = $(e);
+                if ($e && $e.length) {
+                    presentQueue.addPresent($e.text(), $e.attr("href"));
+                }
             });
 
             presentLinkArray.each(function (i, e) {
@@ -229,7 +272,11 @@ class PresentQueue {
             presentLinkArray.filter(function (_i, e) {
                 return $(e).parent().parent().css('background-color') == 'rgb(230, 244, 255)';
             }).each(function (_i, e) {
-                getPresentQueue().addPresent(e);
+                const queue = getPresentQueue();
+                if (queue) {
+                    debugger;
+                    queue.addPresent(e);
+                }
             });
 
             presentLinkArray.each(function (i, e) {
@@ -240,20 +287,31 @@ class PresentQueue {
     }
 
     function getPresentQueue() {
-        return window.opener && window.opener.window && window.opener.window.getPresentQueue() || presentQueue;
+        try {
+            return window.opener && window.opener.window && window.opener.window.getPresentQueue() || presentQueue;
+        } catch (error) {
+            console.log('get error:');
+            console.log(error);
+            return presentQueue;
+        }
     }
 
     //页面加载完成后再开始执行
     $("#chat-popup-area-vm").ready(function () {
         window.getPresentQueue = getPresentQueue;
-        if (srcArr.includes(window.location.pathname)) {
-            //循环打开礼物窗口
-            setInterval(circleFunction, 1000);
-        } else if (window.opener && srcArr.includes(window.opener.window.location.pathname)) {
-            //被打开的窗口最多于100秒后关闭
-            setTimeout(window.close, config.maxAliveTime);
-            //检查礼物是否是否存在
-            var intervalId = setInterval(checkPresentWindow, 1000, config, intervalId);
+        try {
+            if (srcArr.includes(window.location.pathname)) {
+                //循环打开礼物窗口
+                setInterval(circleFunction, 1000);
+            } else if (window.opener && srcArr.includes(window.opener.window.location.pathname)) {
+                //被打开的窗口最多于100秒后关闭
+                setTimeout(window.close, config.maxAliveTime);
+                //检查礼物是否是否存在
+                var intervalId = setInterval(checkPresentWindow, 1000, config, intervalId);
+            }
+        } catch (error) {
+            console.log('ready error:');
+            console.log(error);
         }
     });
 })(window.$ || window.jQuery);
