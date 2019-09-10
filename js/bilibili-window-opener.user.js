@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.2.0
+// @version      1.3.0
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -302,7 +302,7 @@ class PresentQueue {
     $("#chat-popup-area-vm").ready(function () {
         window.getPresentQueue = getPresentQueue;
         try {
-            if (srcArr.includes(window.location.pathname)) {
+            if (srcArr.includes(window.location.pathname) || new URL(location.href).searchParams.get("open")) {
                 //循环打开礼物窗口
                 setInterval(circleFunction, 1000);
             } else if (window.opener && srcArr.includes(window.opener.window.location.pathname)) {
@@ -310,7 +310,10 @@ class PresentQueue {
                 setTimeout(window.close, config.maxAliveTime);
                 //检查礼物是否是否存在
                 var intervalId = setInterval(checkPresentWindow, 1000, config, intervalId);
+            }else{
+
             }
+
         } catch (error) {
             console.log('ready error:');
             console.log(error);
