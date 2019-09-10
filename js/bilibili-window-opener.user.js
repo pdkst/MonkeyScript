@@ -35,7 +35,8 @@ class Present {
     open() {
         //console.log("open ... " + this.path);
         if (this.path && this.timeout() && !this.isDone()) {
-            window.open(this.path, this.liver);
+            const subWindow = window.open(this.path, this.liver);
+            subWindow.autoCloseable = 1
             return (this.done = true);
         }
         return this.isDone();
@@ -305,13 +306,11 @@ class PresentQueue {
             if (srcArr.includes(window.location.pathname) || new URL(location.href).searchParams.get("open")) {
                 //循环打开礼物窗口
                 setInterval(circleFunction, 1000);
-            } else if (window.opener && srcArr.includes(window.opener.window.location.pathname)) {
+            } else if (window.opener && srcArr.includes(window.opener.window.location.pathname) || window.autoCloseable) {
                 //被打开的窗口最多于100秒后关闭
                 setTimeout(window.close, config.maxAliveTime);
                 //检查礼物是否是否存在
                 var intervalId = setInterval(checkPresentWindow, 1000, config, intervalId);
-            }else{
-
             }
 
         } catch (error) {
