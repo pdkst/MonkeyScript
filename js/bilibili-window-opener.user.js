@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.3.1
+// @version      1.3.2
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -278,6 +278,7 @@ class PresentQueue {
                 const queue = getPresentQueue();
                 if (queue) {
                     debugger;
+                    var $e = $(e);
                     queue.addPresent($e.text(), $e.attr("href"));
                 }
             });
