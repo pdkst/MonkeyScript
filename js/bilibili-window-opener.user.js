@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.3.2
+// @version      1.3.3
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -95,7 +95,8 @@ class PresentQueue {
     }
     addPresentByGiver(text, href) {
         var tvRegex = /(.+): (.+)送给(.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧/ig;
-        var matchArr = tvRegex.exec(text);
+        var tvRegex2 = /(.+): (.+)送给(.+)(\d+)个(.+)，点击前往抽奖吧/ig;
+        var matchArr = tvRegex.exec(text) || tvRegex2.exec(text);
         console.log("match = " + matchArr);
         if (matchArr && matchArr.length == 6) {
             var giver = matchArr[2];
@@ -110,13 +111,16 @@ class PresentQueue {
     }
     addPresentByMember(text, href) {
         var memberRegex = /(.+)在(.+)的房间开通了(.+)并触发了抽奖，点击前往TA的房间去抽奖吧/ig;
-        var matchArr = memberRegex.exec(text);
+        //全区广播: 主播鱼场老板阿鱼 的玉兔在直播间触发最终糕能，即将送出丰厚大礼，快来抽奖吧！
+        var memberRegex2 = /(.+): 主播(.+)在直播间触发(.+)，即将送出丰厚大礼，快来抽奖吧！/ig;
+
+        var matchArr = memberRegex.exec(text) || memberRegex2.exec(text);
         if (matchArr && matchArr.length == 4) {
             var giver = matchArr[1];
             var liver = matchArr[2];
             var type = matchArr[3];
             console.log("addPresentByMember = " + liver);
-            var presentNew = new Present("会员", this.getTime("会员"), giver, liver, href);
+            var presentNew = new Present(type, this.getTime(type), giver, liver, href);
             return this.addToQueue(presentNew);
         }
         else {
@@ -126,7 +130,7 @@ class PresentQueue {
     addPresentBySystem(text, href) {
         var hourRegex = /恭喜(.+)夺得(.+)小时总榜第一名！赶快来围观吧~/ig;
         var hourRegex2 = /恭喜主播(.+)获得上一周(.+)！哔哩哔哩 (゜-゜)つロ 干杯~/ig;
-        var matchArr = hourRegex.exec(text);
+        var matchArr = hourRegex.exec(text) || hourRegex2.exec(text);
         if (matchArr) {
             var giver = "system";
             var liver = matchArr[1];
@@ -134,20 +138,11 @@ class PresentQueue {
             console.log("addPresentBySystem = " + liver);
             var presentNew = new Present(type, this.getTime(type), giver, liver, href);
             return this.addToQueue(presentNew);
-        } else {
-            matchArr = hourRegex2.exec(text);
-            if (matchArr) {
-                giver = "system";
-                liver = matchArr[1];
-                type = matchArr[2];
-                console.log("addPresentBySystem = " + liver);
-                presentNew = new Present(type, this.getTime(type), giver, liver, href);
-                return this.addToQueue(presentNew);
-            }
-            else {
-                debugger;
-            }
         }
+        else {
+            debugger;
+        }
+
     }
     /**
      * 根据类型获取时间
@@ -161,6 +156,12 @@ class PresentQueue {
                 now.setTime(now.getTime() + 60 * 1000);
                 return now;
             case "小电视飞船":
+                now.setTime(now.getTime() + 2 * 60 * 1000);
+                return now;
+            case "月色真美，月也温柔，风也温柔":
+                now.setTime(now.getTime() + 2 * 60 * 1000);
+                return now;
+            case "大糕能":
                 now.setTime(now.getTime() + 2 * 60 * 1000);
                 return now;
             case "小时总榜":
