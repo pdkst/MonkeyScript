@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.3.3
+// @version      1.3.5
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -36,7 +36,7 @@ class Present {
         //console.log("open ... " + this.path);
         if (this.path && this.timeout() && !this.isDone()) {
             const subWindow = window.open(this.path, this.liver);
-            subWindow.autoCloseable = 1
+            console.log(subWindow.name);
             return (this.done = true);
         }
         return this.isDone();
@@ -152,17 +152,14 @@ class PresentQueue {
         console.log("type = " + type);
         var now = new Date();
         switch (type) {
+            case "小电视飞船":
+            case "月色真美，月也温柔，风也温柔":
+            case "大糕能":
+            case "最终糕能":
+                now.setTime(now.getTime() + 2 * 60 * 1000);
+                return now;
             case "摩天大楼":
                 now.setTime(now.getTime() + 60 * 1000);
-                return now;
-            case "小电视飞船":
-                now.setTime(now.getTime() + 2 * 60 * 1000);
-                return now;
-            case "月色真美，月也温柔，风也温柔":
-                now.setTime(now.getTime() + 2 * 60 * 1000);
-                return now;
-            case "大糕能":
-                now.setTime(now.getTime() + 2 * 60 * 1000);
                 return now;
             case "小时总榜":
                 return now;
@@ -308,7 +305,7 @@ class PresentQueue {
             if (srcArr.includes(window.location.pathname) || new URL(location.href).searchParams.get("open")) {
                 //循环打开礼物窗口
                 setInterval(circleFunction, 1000);
-            } else if (window.opener && srcArr.includes(window.opener.window.location.pathname) || window.autoCloseable) {
+            } else if (window.opener && srcArr.includes(window.opener.window.location.pathname) || window.name) {
                 //被打开的窗口最多于100秒后关闭
                 setTimeout(window.close, config.maxAliveTime);
                 //检查礼物是否是否存在
