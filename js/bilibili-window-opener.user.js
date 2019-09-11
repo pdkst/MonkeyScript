@@ -278,7 +278,7 @@ class PresentQueue {
                 const queue = getPresentQueue();
                 if (queue) {
                     debugger;
-                    queue.addPresent(e);
+                    queue.addPresent($e.text(), $e.attr("href"));
                 }
             });
 
