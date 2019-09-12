@@ -94,6 +94,5 @@
             $(e).parent().parent().remove();
         });
     });
-    $(document).ready(clickArea);
 })(window.$ || window.jQuery);
 
