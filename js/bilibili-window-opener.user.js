@@ -11,13 +11,20 @@
 // @supportURL   https://github.com/pdkst/MonkeyScript/issues
 // ==/UserScript==
 
-window.presentDebug = true;
 class ConsoleProxy {
     debug(str, ...optionalParams) {
-        this.debugEnable() && console.debug.apply(console, arguments);
+        if (window.getPresentQueue) {
+            window.getPresentQueue().debugEnable() && console.debug.apply(console, arguments);
+        } else {
+            console.debug.apply(console, arguments);
+        }
     }
     log(str, ...optionalParams) {
-        this.debugEnable() && console.log.apply(console, arguments);
+        if (window.getPresentQueue) {
+            window.getPresentQueue().debugEnable() && console.log.apply(console, arguments);
+        } else {
+            console.log.apply(console, arguments);
+        }
     }
     warn(str, ...optionalParams) {
         console.warn.apply(console, arguments);
@@ -25,15 +32,7 @@ class ConsoleProxy {
     error(str, ...optionalParams) {
         console.error.apply(console, arguments);
     }
-    debugEnable() {
-        if (window.opener) {
-            return window.opener.window.presentDebug && window.presentDebug;
-        } else {
-            return window.presentDebug;
-        }
-    }
 }
-
 
 (function ($, console) {
     'use strict';
@@ -81,6 +80,7 @@ class ConsoleProxy {
         constructor(name) {
             this.queue = [];
             this.name = name || '';
+            this.debug = window.debugEnable = window.debugEnable || true;
         }
 
         addPresent(text, href) {
@@ -214,6 +214,14 @@ class ConsoleProxy {
             this.queue = this.queue.filter(function (value) {
                 return !value.done;
             });
+        }
+        debugEnable() {
+            var queue = getPresentQueue();
+            if (queue && queue != this) {
+                return queue.debugEnable();
+            } else {
+                return window.debugEnable && this.debug;
+            }
         }
     }
 
