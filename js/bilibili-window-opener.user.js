@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.3.7
+// @version      1.3.8
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -114,7 +114,7 @@ class PresentQueue {
     addPresentByMember(text, href) {
         var memberRegex = /(.+)在(.+)的房间开通了(.+)并触发了抽奖，点击前往TA的房间去抽奖吧/ig;
         //全区广播: 主播鱼场老板阿鱼 的玉兔在直播间触发最终糕能，即将送出丰厚大礼，快来抽奖吧！
-        var memberRegex2 = /(.+): 主播(.+) 的玉兔在直播间触发(.+)，即将送出丰厚大礼，快来抽奖吧！/ig;
+        var memberRegex2 = /(.+)[:：]\s?主播(.+) 的玉兔在直播间触发(.+)，即将送出丰厚大礼，快来抽奖吧！/ig;
 
         var matchArr = memberRegex.exec(text) || memberRegex2.exec(text);
         if (matchArr && matchArr.length == 4) {
