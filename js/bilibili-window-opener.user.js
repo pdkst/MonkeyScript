@@ -58,7 +58,7 @@ class PresentQueue {
     }
 
     addPresent(text, href) {
-        console.log(text);
+        //console.log(text);
         // 小电视等礼物
         var present = this.addPresentByGiver(text, href);
         if (present) {
@@ -99,8 +99,8 @@ class PresentQueue {
         var tvRegex2 = /(.+): (.+)送给(.+)(\d+)个(.+)，点击前往TA的直播间去抽奖吧~/ig;
         var tvRegex3 = /(.+): (.+)送给(.+)(\d+)个(.+)，点击前往抽奖吧/ig;
         var matchArr = tvRegex.exec(text) || tvRegex2.exec(text) || tvRegex3.exec(text);
-        console.log("match = " + matchArr);
         if (matchArr && matchArr.length == 6) {
+            console.log("match = " + matchArr);
             var giver = matchArr[2];
             var liver = matchArr[3];
             var type = matchArr[5];
@@ -118,6 +118,7 @@ class PresentQueue {
 
         var matchArr = memberRegex.exec(text) || memberRegex2.exec(text);
         if (matchArr && matchArr.length == 4) {
+            console.log("match = " + matchArr);
             var giver = matchArr[1];
             var liver = matchArr[2];
             var type = matchArr[3];
@@ -134,6 +135,7 @@ class PresentQueue {
         var hourRegex2 = /恭喜主播(.+)获得上一周(.+)！哔哩哔哩 (゜-゜)つロ 干杯~/ig;
         var matchArr = hourRegex.exec(text) || hourRegex2.exec(text);
         if (matchArr) {
+            console.log("match = " + matchArr);
             var giver = "system";
             var liver = matchArr[1];
             var type = matchArr[2];
