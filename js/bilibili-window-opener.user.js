@@ -91,6 +91,7 @@ class PresentQueue {
             }
             else {
                 console.log("Present Queue Exists ! " + presentNew.giver + ' to ' + presentNew.liver);
+                return presentExists[0];
             }
         }
     }
