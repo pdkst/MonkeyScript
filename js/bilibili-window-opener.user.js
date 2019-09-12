@@ -38,9 +38,10 @@ class ConsoleProxy {
     'use strict';
     /**
      * 礼物事件
+     * @param path url地址
      */
     class Present {
-        constructor(type, date, giver, liver, path, done) {
+        constructor(path, date, liver, type, giver, done) {
             this.type = type || '';
             this.date = date || new Date();
             this.giver = giver || '';
@@ -68,6 +69,9 @@ class ConsoleProxy {
         }
 
         timeout() {
+            if (!date) {
+                return true;
+            }
             return !!(this.date < new Date());
         }
 
@@ -131,7 +135,7 @@ class ConsoleProxy {
                 var giver = matchArr[2];
                 var liver = matchArr[3];
                 var type = matchArr[5];
-                var presentNew = new Present(type, this.getTime(type), giver, liver, href);
+                var presentNew = new Present(href, this.getTime(type), liver, type, giver);
                 return this.addToQueue(presentNew);
             }
             else {
@@ -140,7 +144,6 @@ class ConsoleProxy {
         }
         addPresentByMember(text, href) {
             var memberRegex = /(.+)在(.+)的房间开通了(.+)并触发了抽奖，点击前往TA的房间去抽奖吧/ig;
-            //全区广播: 主播鱼场老板阿鱼 的玉兔在直播间触发最终糕能，即将送出丰厚大礼，快来抽奖吧！
             var memberRegex2 = /(.+)[:：]\s?主播(.+) 的玉兔在直播间触发(.+)，即将送出丰厚大礼，快来抽奖吧！/ig;
 
             var matchArr = memberRegex.exec(text) || memberRegex2.exec(text);
@@ -150,7 +153,7 @@ class ConsoleProxy {
                 var liver = matchArr[2];
                 var type = matchArr[3];
                 console.log("addPresentByMember = " + liver);
-                var presentNew = new Present(type, this.getTime(type), giver, liver, href);
+                var presentNew = new Present(href, this.getTime(type), liver, type, giver);
                 return this.addToQueue(presentNew);
             }
             else {
@@ -167,7 +170,7 @@ class ConsoleProxy {
                 var liver = matchArr[1];
                 var type = matchArr[2];
                 console.log("addPresentBySystem = " + liver);
-                var presentNew = new Present(type, this.getTime(type), giver, liver, href);
+                var presentNew = new Present(href, this.getTime(type), liver, type, giver);
                 return this.addToQueue(presentNew);
             }
             else {
@@ -354,5 +357,5 @@ class ConsoleProxy {
             console.log(error);
         }
     });
-})(window.$ || window.jQuery, new ConsoleProxy(window.presentDebug));
+})(window.$ || window.jQuery, console);
 
