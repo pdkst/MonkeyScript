@@ -11,188 +11,212 @@
 // @supportURL   https://github.com/pdkst/MonkeyScript/issues
 // ==/UserScript==
 
-/**
- * 礼物事件
- */
-class Present {
-    constructor(type, date, giver, liver, path, done) {
-        this.type = type || '';
-        this.date = date || new Date();
-        this.giver = giver || '';
-        this.liver = liver || '';
-        this.path = path || '';
-        this.done = done || false;
-        if (path) {
-            this.url = new URL(path);
-            this.pathname = this.url.pathname;
+window.presentDebug = true;
+class ConsoleProxy {
+    debug(str, ...optionalParams) {
+        this.debugEnable() && console.debug.apply(console, arguments);
+    }
+    log(str, ...optionalParams) {
+        this.debugEnable() && console.log.apply(console, arguments);
+    }
+    warn(str, ...optionalParams) {
+        console.warn.apply(console, arguments);
+    }
+    error(str, ...optionalParams) {
+        console.error.apply(console, arguments);
+    }
+    debugEnable() {
+        if (window.opener) {
+            return window.opener.window.presentDebug && window.presentDebug;
+        } else {
+            return window.presentDebug;
         }
     }
-
-    isDone() {
-        return !!this.done;
-    }
-
-    open() {
-        //console.log("open ... " + this.path);
-        if (this.path && this.timeout() && !this.isDone()) {
-            const subWindow = window.open(this.path, this.liver);
-            console.log(subWindow.name);
-            return (this.done = true);
-        }
-        return this.isDone();
-    }
-
-    timeout() {
-        return !!(this.date < new Date());
-    }
-
 }
 
-/**
- * 礼物队列
- */
-class PresentQueue {
-    constructor(name) {
-        this.queue = [];
-        this.name = name || '';
-    }
 
-    addPresent(text, href) {
-        //console.log(text);
-        // 小电视等礼物
-        var present = this.addPresentByGiver(text, href);
-        if (present) {
-            return present;
-        }
-
-        present = this.addPresentByMember(text, href);
-        if (present) {
-            return present;
-        }
-
-        present = this.addPresentBySystem(text, href);
-        if (present) {
-            return present;
-        }
-        console.log("Text does not match: \n" + text);
-    }
+(function ($, console) {
+    'use strict';
     /**
-     * 添加新的礼物到队列中
-     * @param {Present} presentNew 新的礼物
+     * 礼物事件
      */
-    addToQueue(presentNew) {
-        if (presentNew.pathname) {
-            var presentExists = this.queue.filter(function (e) {
-                return e.pathname == presentNew.pathname;
-            });
-            if (!presentExists.length) {
-                this.queue.push(presentNew);
-                return presentNew;
+    class Present {
+        constructor(type, date, giver, liver, path, done) {
+            this.type = type || '';
+            this.date = date || new Date();
+            this.giver = giver || '';
+            this.liver = liver || '';
+            this.path = path || '';
+            this.done = done || false;
+            if (path) {
+                this.url = new URL(path);
+                this.pathname = this.url.pathname;
+            }
+        }
+
+        isDone() {
+            return !!this.done;
+        }
+
+        open() {
+            //console.log("open ... " + this.path);
+            if (this.path && this.timeout() && !this.isDone()) {
+                const subWindow = window.open(this.path, this.liver);
+                console.log(subWindow.name);
+                return (this.done = true);
+            }
+            return this.isDone();
+        }
+
+        timeout() {
+            return !!(this.date < new Date());
+        }
+
+    }
+
+    /**
+     * 礼物队列
+     */
+    class PresentQueue {
+        constructor(name) {
+            this.queue = [];
+            this.name = name || '';
+        }
+
+        addPresent(text, href) {
+            //console.log(text);
+            // 小电视等礼物
+            var present = this.addPresentByGiver(text, href);
+            if (present) {
+                return present;
+            }
+
+            present = this.addPresentByMember(text, href);
+            if (present) {
+                return present;
+            }
+
+            present = this.addPresentBySystem(text, href);
+            if (present) {
+                return present;
+            }
+            console.log("Text does not match: \n" + text);
+        }
+        /**
+         * 添加新的礼物到队列中
+         * @param {Present} presentNew 新的礼物
+         */
+        addToQueue(presentNew) {
+            if (presentNew.pathname) {
+                var presentExists = this.queue.filter(function (e) {
+                    return e.pathname == presentNew.pathname;
+                });
+                if (!presentExists.length) {
+                    this.queue.push(presentNew);
+                    return presentNew;
+                }
+                else {
+                    console.log("Present Queue Exists ! " + presentNew.giver + ' to ' + presentNew.liver);
+                    return presentExists[0];
+                }
+            }
+        }
+        addPresentByGiver(text, href) {
+            var tvRegex = /(.+)[:：]\s?(.+)送给(.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧/ig;
+            var tvRegex2 = /(.+)[:：]\s?(.+)送给(.+)(\d+)个(.+)，点击前往TA的直播间去抽奖吧~/ig;
+            var tvRegex3 = /(.+)[:：]\s?(.+)送给(.+)(\d+)个(.+)，点击前往抽奖吧/ig;
+            var matchArr = tvRegex.exec(text) || tvRegex2.exec(text) || tvRegex3.exec(text);
+            if (matchArr && matchArr.length == 6) {
+                console.log("match = " + matchArr);
+                var giver = matchArr[2];
+                var liver = matchArr[3];
+                var type = matchArr[5];
+                var presentNew = new Present(type, this.getTime(type), giver, liver, href);
+                return this.addToQueue(presentNew);
             }
             else {
-                console.log("Present Queue Exists ! " + presentNew.giver + ' to ' + presentNew.liver);
-                return presentExists[0];
+                debugger;
             }
         }
-    }
-    addPresentByGiver(text, href) {
-        var tvRegex = /(.+): (.+)送给(.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧/ig;
-        var tvRegex2 = /(.+): (.+)送给(.+)(\d+)个(.+)，点击前往TA的直播间去抽奖吧~/ig;
-        var tvRegex3 = /(.+): (.+)送给(.+)(\d+)个(.+)，点击前往抽奖吧/ig;
-        var matchArr = tvRegex.exec(text) || tvRegex2.exec(text) || tvRegex3.exec(text);
-        if (matchArr && matchArr.length == 6) {
-            console.log("match = " + matchArr);
-            var giver = matchArr[2];
-            var liver = matchArr[3];
-            var type = matchArr[5];
-            var presentNew = new Present(type, this.getTime(type), giver, liver, href);
-            return this.addToQueue(presentNew);
-        }
-        else {
-            debugger;
-        }
-    }
-    addPresentByMember(text, href) {
-        var memberRegex = /(.+)在(.+)的房间开通了(.+)并触发了抽奖，点击前往TA的房间去抽奖吧/ig;
-        //全区广播: 主播鱼场老板阿鱼 的玉兔在直播间触发最终糕能，即将送出丰厚大礼，快来抽奖吧！
-        var memberRegex2 = /(.+)[:：]\s?主播(.+) 的玉兔在直播间触发(.+)，即将送出丰厚大礼，快来抽奖吧！/ig;
+        addPresentByMember(text, href) {
+            var memberRegex = /(.+)在(.+)的房间开通了(.+)并触发了抽奖，点击前往TA的房间去抽奖吧/ig;
+            //全区广播: 主播鱼场老板阿鱼 的玉兔在直播间触发最终糕能，即将送出丰厚大礼，快来抽奖吧！
+            var memberRegex2 = /(.+)[:：]\s?主播(.+) 的玉兔在直播间触发(.+)，即将送出丰厚大礼，快来抽奖吧！/ig;
 
-        var matchArr = memberRegex.exec(text) || memberRegex2.exec(text);
-        if (matchArr && matchArr.length == 4) {
-            console.log("match = " + matchArr);
-            var giver = matchArr[1];
-            var liver = matchArr[2];
-            var type = matchArr[3];
-            console.log("addPresentByMember = " + liver);
-            var presentNew = new Present(type, this.getTime(type), giver, liver, href);
-            return this.addToQueue(presentNew);
-        }
-        else {
-            debugger;
-        }
-    }
-    addPresentBySystem(text, href) {
-        var hourRegex = /恭喜(.+)夺得(.+)小时总榜第一名！赶快来围观吧~/ig;
-        var hourRegex2 = /恭喜主播(.+)获得上一周(.+)！哔哩哔哩 (゜-゜)つロ 干杯~/ig;
-        var matchArr = hourRegex.exec(text) || hourRegex2.exec(text);
-        if (matchArr) {
-            console.log("match = " + matchArr);
-            var giver = "system";
-            var liver = matchArr[1];
-            var type = matchArr[2];
-            console.log("addPresentBySystem = " + liver);
-            var presentNew = new Present(type, this.getTime(type), giver, liver, href);
-            return this.addToQueue(presentNew);
-        }
-        else {
-            debugger;
-        }
-
-    }
-    /**
-     * 根据类型获取时间
-     * @param {string} type 类型
-     */
-    getTime(type) {
-        console.log("type = " + type);
-        var now = new Date();
-        switch (type) {
-            case "小电视飞船":
-            case "月色真美，月也温柔，风也温柔":
-            case "大糕能":
-            case "最终糕能":
-                now.setTime(now.getTime() + 2 * 60 * 1000);
-                return now;
-            case "摩天大楼":
-                now.setTime(now.getTime() + 60 * 1000);
-                return now;
-            case "小时总榜":
-                return now;
-            default:
-                return now;
-        }
-    }
-
-    shiftOpen() {
-        this.queue.sort(function (a, b) {
-            return a.date - b.date;
-        });
-        if (this.queue.length && this.queue[0].timeout()) {
-            var firstPresent = this.queue.shift();
-            if (!firstPresent.open()) {
-                this.queue.unshift(firstPresent);
+            var matchArr = memberRegex.exec(text) || memberRegex2.exec(text);
+            if (matchArr && matchArr.length == 4) {
+                console.log("match = " + matchArr);
+                var giver = matchArr[1];
+                var liver = matchArr[2];
+                var type = matchArr[3];
+                console.log("addPresentByMember = " + liver);
+                var presentNew = new Present(type, this.getTime(type), giver, liver, href);
+                return this.addToQueue(presentNew);
+            }
+            else {
+                debugger;
             }
         }
-    }
-    removeDone() {
-        this.queue = this.queue.filter(function (value) {
-            return !value.done;
-        });
-    }
-}
+        addPresentBySystem(text, href) {
+            var hourRegex = /恭喜(.+)夺得(.+)小时总榜第一名！赶快来围观吧~/ig;
+            var hourRegex2 = /恭喜主播(.+)获得上一周(.+)！哔哩哔哩 (゜-゜)つロ 干杯~/ig;
+            var matchArr = hourRegex.exec(text) || hourRegex2.exec(text);
+            if (matchArr) {
+                console.log("match = " + matchArr);
+                var giver = "system";
+                var liver = matchArr[1];
+                var type = matchArr[2];
+                console.log("addPresentBySystem = " + liver);
+                var presentNew = new Present(type, this.getTime(type), giver, liver, href);
+                return this.addToQueue(presentNew);
+            }
+            else {
+                debugger;
+            }
 
-(function ($) {
-    'use strict';
+        }
+        /**
+         * 根据类型获取时间
+         * @param {string} type 类型
+         */
+        getTime(type) {
+            console.log("type = " + type);
+            var now = new Date();
+            switch (type) {
+                case "小电视飞船":
+                case "月色真美，月也温柔，风也温柔":
+                case "大糕能":
+                case "最终糕能":
+                    now.setTime(now.getTime() + 2 * 60 * 1000);
+                    return now;
+                case "摩天大楼":
+                    now.setTime(now.getTime() + 60 * 1000);
+                    return now;
+                case "小时总榜":
+                    return now;
+                default:
+                    return now;
+            }
+        }
+
+        shiftOpen() {
+            this.queue.sort(function (a, b) {
+                return a.date - b.date;
+            });
+            if (this.queue.length && this.queue[0].timeout()) {
+                var firstPresent = this.queue.shift();
+                if (!firstPresent.open()) {
+                    this.queue.unshift(firstPresent);
+                }
+            }
+        }
+        removeDone() {
+            this.queue = this.queue.filter(function (value) {
+                return !value.done;
+            });
+        }
+    }
+
 
     //可变更的配置
     var config = {
@@ -322,5 +346,5 @@ class PresentQueue {
             console.log(error);
         }
     });
-})(window.$ || window.jQuery);
+})(window.$ || window.jQuery, new ConsoleProxy(window.presentDebug));
 
