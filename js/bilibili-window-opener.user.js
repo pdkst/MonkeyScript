@@ -217,7 +217,7 @@ class PresentQueue {
         });
     }
     debugEnable() {
-        var queue = getPresentQueue();
+        var queue = this.getPresentQueue();
         if (queue && queue != this) {
             return queue.debugEnable();
         } else {
@@ -409,6 +409,7 @@ class RoomListLoader {
     //页面加载完成后再开始执行
     $("#chat-popup-area-vm").ready(function () {
         window.getPresentQueue = getPresentQueue;
+        window.roomListLoader = new RoomListLoader();
         try {
             if (window.name) {
                 //window.opener && srcArr.includes(window.opener.window.location.pathname) || window.name
