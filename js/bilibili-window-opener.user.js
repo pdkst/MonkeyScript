@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.3.9
+// @version      1.3.10
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -230,8 +230,9 @@ class ConsoleProxy {
     }
     //上下文
 
-    var $frame = $('#player-ctnr > div > iframe');
-    var $context = $frame.length && $frame.contents() || document;
+    var $framePlayer = $('#player-ctnr > div > iframe');
+    var $frameLive = $('#live > div.live-wrapper > div > div > iframe');
+    var $context = ($framePlayer.length && $framePlayer.contents()) || ($frameLive.length && $frameLive.contents()) || document;
 
     //可变更的配置
     var config = {
