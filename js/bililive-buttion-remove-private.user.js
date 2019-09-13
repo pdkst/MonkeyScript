@@ -28,8 +28,8 @@
                 console.log("button.parent..")
                 $button.parent().click();
                 console.log("button..")
-                $button.click();
-                console.log("..")
+                //$button.click();
+                //console.log("..")
             }
         }
         var $otherButton = $('body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div > div > button');
