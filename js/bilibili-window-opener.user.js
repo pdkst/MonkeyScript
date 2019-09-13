@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.3.8
+// @version      1.3.9
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -69,7 +69,7 @@ class ConsoleProxy {
         }
 
         timeout() {
-            if (!date) {
+            if (!this.date) {
                 return true;
             }
             return !!(this.date < new Date());
@@ -190,6 +190,7 @@ class ConsoleProxy {
                 case "月色真美，月也温柔，风也温柔":
                 case "大糕能":
                 case "最终糕能":
+                case "幻乐之声":
                     now.setTime(now.getTime() + 2 * 60 * 1000);
                     return now;
                 case "摩天大楼":
@@ -227,7 +228,10 @@ class ConsoleProxy {
             }
         }
     }
+    //上下文
 
+    var $frame = $('#player-ctnr > div > iframe');
+    var $context = $frame.length && $frame.contents() || document;
 
     //可变更的配置
     var config = {
@@ -256,7 +260,7 @@ class ConsoleProxy {
     srcArr.push('/21449083'); //物述有栖
 
     function circleFunction() {
-        var presentLinkArray = $('#chat-history-list > div.chat-item.system-msg.border-box > div > a');
+        var presentLinkArray = $('#chat-history-list > div.chat-item.system-msg.border-box > div > a', $context);
         if (presentLinkArray.length) {
             console.log('现存礼物总数：' + presentLinkArray.length);
             presentLinkArray.each(function (_i, e) {
@@ -282,22 +286,22 @@ class ConsoleProxy {
 
     //检查是否应该关闭窗口
     function checkPresentWindow(config, intervalId) {
-        //暂停播放按钮
-        $('#js-player-decorator > div > div.bilibili-live-player-video-controller > div > div > div.bilibili-live-player-video-controller-left.clearfix > div.bilibili-live-player-video-controller-btn-item.bilibili-live-player-video-controller-start-btn > button[data-title=暂停]').click();
-
         var aliveTime = new Date().getTime() - config.startTime;
+        //暂停播放按钮
+        $('#js-player-decorator > div > div.bilibili-live-player-video-controller > div > div > div.bilibili-live-player-video-controller-left.clearfix > div.bilibili-live-player-video-controller-btn-item.bilibili-live-player-video-controller-start-btn > button[data-title=暂停]', $context).click();
+
         //旧礼物抽奖待机区
-        var isFinish = $("#chat-popup-area-vm > div > div.wait:visible:has(:contains(已抽奖， 等待开奖))").length === 1;
+        var isFinish = $("#chat-popup-area-vm > div > div.wait:visible:has(:contains(已抽奖， 等待开奖))", $context).length === 1;
         //旧礼物弹窗区是否已不显示
-        isFinish = isFinish || $("#chat-popup-area-vm > div.chat-popup-area-cntr").children().length === 0;
+        isFinish = isFinish || $("#chat-popup-area-vm > div.chat-popup-area-cntr", $context).children().length === 0;
 
         //检查新礼物窗口是否已关闭
-        isFinish = isFinish && $("#chat-draw-area-vm > div > div.draw-full-cntr.show > div.function-bar").length == 0;
+        isFinish = isFinish && $("#chat-draw-area-vm > div > div.draw-full-cntr.show > div.function-bar", $context).length == 0;
         //超级迷你小图标
-        isFinish = isFinish && $("#chat-draw-area-vm > div > div.draw-fold-cntr.show").length == 0;
+        isFinish = isFinish && $("#chat-draw-area-vm > div > div.draw-fold-cntr.show", $context).length == 0;
 
         //检查弹幕是否已加载
-        isFinish = isFinish && $("#chat-history-list > div").length != 0;
+        isFinish = isFinish && $("#chat-history-list > div", $context).length != 0;
 
         if (isFinish && aliveTime >= config.minAliveTime) {
             clearInterval(intervalId);
@@ -307,10 +311,10 @@ class ConsoleProxy {
     }
 
     function loadPresentToParent() {
-        var presentLinkArray = $('#chat-history-list > div.chat-item.system-msg.border-box > div > a');
-        if (presentLinkArray.length) {
-            console.log('额外礼物总数：' + presentLinkArray.length);
-            presentLinkArray.filter(function (_i, e) {
+        var $presentLinkArray = $('#chat-history-list > div.chat-item.system-msg.border-box > div > a', $context);
+        if ($presentLinkArray.length) {
+            console.log('额外礼物总数：' + $presentLinkArray.length);
+            $presentLinkArray.filter(function (_i, e) {
                 return $(e).parent().parent().css('background-color') == 'rgb(230, 244, 255)';
             }).each(function (_i, e) {
                 const queue = getPresentQueue();
@@ -321,7 +325,7 @@ class ConsoleProxy {
                 }
             });
 
-            presentLinkArray.each(function (i, e) {
+            $presentLinkArray.each(function (i, e) {
                 $(e).parent().parent().remove();
             });
 
@@ -345,7 +349,8 @@ class ConsoleProxy {
             if (srcArr.includes(window.location.pathname) || new URL(location.href).searchParams.get("open")) {
                 //循环打开礼物窗口
                 setInterval(circleFunction, 1000);
-            } else if (window.opener && srcArr.includes(window.opener.window.location.pathname) || window.name) {
+            } else if (window.name) {
+                //window.opener && srcArr.includes(window.opener.window.location.pathname) || window.name
                 //被打开的窗口最多于100秒后关闭
                 setTimeout(window.close, config.maxAliveTime);
                 //检查礼物是否是否存在
