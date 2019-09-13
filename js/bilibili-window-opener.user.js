@@ -237,13 +237,47 @@ class RoomListLoader {
         this.parent_area_id = parentAreaId
         this.area_id = areaId
     }
+    /**
+     * 添加到队列中
+     * @param {PresentQueue} queue 队列
+     */
+    addToPresentQueue(queue, page, page_size) {
+        this.load(page, page_size, function (res) {
+            if (res.message == 'success' && res.data && res.data.count && res.data.list && res.data.list.length) {
+                var list = res.data.list;
+                console.log(list);
+                list.filter(function (value) {
+                    return value.pendant_info;
+                }).filter(function (value) {
+                    return value.pendant_info.length !== 0;
+                }).filter(function (value) {
+                    var object = value.pendant_info;
+                    for (const key in object) {
+                        if (object.hasOwnProperty(key)) {
+                            const element = object[key];
+                            if (element.content == '正在抽奖') {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }).forEach(function (value) {
+                    console.log(value)
+                    queue.addToQueue(new Present('https://live.bilibili.com/' + value.roomid, new Date(), value.uname, 'getRoomList', 'none'))
+                });
+            } else {
+                console.log("res = ", res);
+            }
+        })
+
+    }
     load(page, page_size, success) {
         this.page = page || 1;
         this.page_size = page_size || 30
         this.getRoomList(this, success);
 
     }
-    getRoomList(param, success){
+    getRoomList(param, success) {
         return $.get("https://api.live.bilibili.com/room/v3/area/getRoomList", param).success(success);
     }
 }
