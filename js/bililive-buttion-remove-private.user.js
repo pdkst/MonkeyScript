@@ -13,10 +13,6 @@
 
 (function ($) {
     'use strict';
-    //上下文
-    var $framePlayer = $('#player-ctnr > div > iframe');
-    var $frameLive = $('#live > div.live-wrapper > div > div > iframe');
-    var $context = ($framePlayer.length && $framePlayer.contents()) || ($frameLive.length && $frameLive.contents()) || document;
 
     //=======方法区========
     /**
@@ -24,7 +20,7 @@
      */
     function closePopupWin() {
         //抽奖确认
-        var $button = $('body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div.popup-btn-ctnr.t-center > button', $context);
+        var $button = $('body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div.popup-btn-ctnr.t-center > button');
         //排除包含弹幕风暴输入框的弹窗 body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div > div:nth-child(2) > input
         if ($button.length) {
             console.log("$button = " + $button.length);
@@ -36,7 +32,7 @@
                 console.log("..")
             }
         }
-        var $otherButton = $('body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div > div > button', $context);
+        var $otherButton = $('body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div > div > button');
         //其他确认按钮
         if ($otherButton.length) {
             console.log("$otherButton = " + $otherButton.length);
@@ -48,8 +44,9 @@
      * 点击礼物区窗口
      */
     function closePresentWin() {
-        var $presentArea = $('#chat-popup-area-vm > div > div > div.main', $context);
-        var $miniPresentArea = $('#chat-draw-area-vm > div > div.draw-full-cntr.show > div.function-bar.draw', $context);
+
+        var $presentArea = $('#chat-popup-area-vm > div > div > div.main');
+        var $miniPresentArea = $('#chat-draw-area-vm > div > div.draw-full-cntr.show > div.function-bar.draw');
         //旧礼物区域
         if ($presentArea.length) {
             //console.log("$presentArea = " + $presentArea.length);
@@ -72,7 +69,7 @@
             });
         }
         //超级小图标点击区
-        var $superMiniPresentArea = $('#chat-draw-area-vm > div > div.draw-fold-cntr.show > div.draw', $context);
+        var $superMiniPresentArea = $('#chat-draw-area-vm > div > div.draw-fold-cntr.show > div.draw');
         if ($superMiniPresentArea.length) {
             $superMiniPresentArea.each(function (i, e) {
                 $(e).click();
@@ -101,4 +98,3 @@
         });
     });
 })(window.$ || window.jQuery);
-
