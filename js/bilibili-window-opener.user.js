@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.4.0
+// @version      1.4.1
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -188,6 +188,7 @@ class PresentQueue {
             case "大糕能":
             case "最终糕能":
             case "幻乐之声":
+            case "处女座流星雨":
                 now.setTime(now.getTime() + 2 * 60 * 1000);
                 return now;
             case "摩天大楼":
@@ -409,6 +410,7 @@ class RoomListLoader {
     //页面加载完成后再开始执行
     $("#chat-popup-area-vm").ready(function () {
         window.getPresentQueue = getPresentQueue;
+        window.presentQueue = getPresentQueue();
         window.roomListLoader = new RoomListLoader();
         try {
             if (window.name) {
