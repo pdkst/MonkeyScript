@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.4.2
+// @version      1.4.3
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -126,7 +126,8 @@ class PresentQueue {
         var tvRegex = /(.+)[:：]\s?(.+)送给(.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧/ig;
         var tvRegex2 = /(.+)[:：]\s?(.+)送给(.+)(\d+)个(.+)，点击前往TA的直播间去抽奖吧~/ig;
         var tvRegex3 = /(.+)[:：]\s?(.+)送给(.+)(\d+)个(.+)，点击前往抽奖吧/ig;
-        var matchArr = tvRegex.exec(text) || tvRegex2.exec(text) || tvRegex3.exec(text);
+        var tvRegex4 = /(.+)[:：]\s?(.+)投喂(.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧/ig;
+        var matchArr = tvRegex.exec(text) || tvRegex2.exec(text) || tvRegex3.exec(text) || tvRegex4.exec(text);
         if (matchArr && matchArr.length == 6) {
             console.log("match = " + matchArr);
             var giver = matchArr[2];
