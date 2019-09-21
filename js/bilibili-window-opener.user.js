@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.4.3
+// @version      1.5.0
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面
 // @author       pdkst
 // @match        *://live.bilibili.com/*
 // @require      https://static.hdslb.com/live-static/libs/jquery/jquery-1.11.3.min.js
-// @grant        none
+// @grant        GM_openInTab
 // @license      LGPLv3
 // @supportURL   https://github.com/pdkst/MonkeyScript/issues
 // ==/UserScript==
@@ -48,6 +48,7 @@ class Present {
         if (path) {
             this.url = new URL(path);
             this.pathname = this.url.pathname;
+            this.url.hash = 'autoClose';
         }
     }
 
@@ -58,7 +59,11 @@ class Present {
     open() {
         //console.log("open ... " + this.path);
         if (this.path && this.timeout() && !this.isDone()) {
-            const subWindow = window.open(this.path, this.liver);
+            const subWindow = GM_openInTab(this.url.toString(), {
+                active: false,
+                insert: true,
+                setParent: true
+            });
             console.log(subWindow.name);
             return (this.done = true);
         }
@@ -373,7 +378,7 @@ class RoomListLoader {
             clearInterval(intervalId);
             window.close();
         }
-        loadPresentToParent();
+        //loadPresentToParent();
     }
 
     function loadPresentToParent() {
@@ -410,11 +415,13 @@ class RoomListLoader {
 
     //页面加载完成后再开始执行
     $("#chat-popup-area-vm").ready(function () {
+        var window = unsafeWindow || window;
         window.getPresentQueue = getPresentQueue;
         window.presentQueue = getPresentQueue();
         window.roomListLoader = new RoomListLoader();
         try {
-            if (window.name) {
+            var hash = window.location.hash || '#';
+            if (window.name || hash.includes("autoClose")) {
                 //window.opener && srcArr.includes(window.opener.window.location.pathname) || window.name
                 //被打开的窗口最多于100秒后关闭
                 setTimeout(window.close, config.maxAliveTime);
