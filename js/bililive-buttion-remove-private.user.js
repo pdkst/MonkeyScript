@@ -19,29 +19,34 @@
      * 关闭窗口点击的确认按钮
      */
     function closePopupWin() {
-        //抽奖确认
-        var $button = $('body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div.popup-btn-ctnr.t-center > button');
-        //排除包含弹幕风暴输入框的弹窗 body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div > div:nth-child(2) > input
-        if ($button.length) {
-            console.log("$button = " + $button.length);
-            if ($button.parent('div.popup-content-ctnr').children('div > div:nth-child(2) > input').length == 0) {
-                console.log("button.parent..")
-                //触发按钮上级元素，原来的事件并非是这个元素触发的貌似
-                $button.parent().click();
-                console.log("button..")
-                //触发按钮本体
-                $button.click();
-                //console.log("..")
-                //关闭面板按钮，上面按钮如果没有触发关闭事件则会不停循环
-                //选择器：body > div:nth-child(10) > div > div.dp-table-cell.v-middle > div > div.close-btn.p-absolute.bg-center.bg-no-repeat.pointer.t-center
-                $('div.dp-table-cell.v-middle > div > div.close-btn.p-absolute.bg-center.bg-no-repeat.pointer.t-center').click();
+        try {
+            //抽奖确认
+            var $button = $('body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div.popup-btn-ctnr.t-center > button');
+            //排除包含弹幕风暴输入框的弹窗 body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div > div:nth-child(2) > input
+            if ($button.length) {
+                console.log("$button = " + $button.length);
+                if ($button.parent('div.popup-content-ctnr').children('div > div:nth-child(2) > input').length == 0) {
+                    console.log("button.parent..")
+                    //触发按钮上级元素，原来的事件并非是这个元素触发的貌似
+                    $button.parent().click();
+                    console.log("button..")
+                    //触发按钮本体
+                    $button.click();
+                    //console.log("..")
+                    //关闭面板按钮，上面按钮如果没有触发关闭事件则会不停循环
+                    //选择器：body > div:nth-child(10) > div > div.dp-table-cell.v-middle > div > div.close-btn.p-absolute.bg-center.bg-no-repeat.pointer.t-center
+                    $('div.dp-table-cell.v-middle > div > div.close-btn.p-absolute.bg-center.bg-no-repeat.pointer.t-center').click();
+                }
             }
-        }
-        var $otherButton = $('body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div > div > button');
-        //其他确认按钮
-        if ($otherButton.length) {
-            console.log("$otherButton = " + $otherButton.length);
-            $otherButton.click();
+            var $otherButton = $('body > div.link-popup-ctnr > div > div.dp-table-cell.v-middle > div > div.popup-content-ctnr > div > div > button');
+            //其他确认按钮
+            if ($otherButton.length) {
+                console.log("$otherButton = " + $otherButton.length);
+                $otherButton.click();
+            }
+        } catch (error) {
+            console.log("click error catch : ");
+            console.debug(error);
         }
     }
 
