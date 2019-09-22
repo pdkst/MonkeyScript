@@ -245,7 +245,7 @@ class RoomListLoader {
         this.area_id = areaId
     }
     autoLoad(){
-        addToPresentQueue(window.presentQueue, this.page, page_size);
+        this.addToPresentQueue(window.presentQueue, this.page, page_size);
         this.page += 1;
     }
     /**
