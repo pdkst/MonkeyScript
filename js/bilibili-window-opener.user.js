@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.5.0
+// @version      1.5.1
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -59,12 +59,12 @@ class Present {
     open() {
         //console.log("open ... " + this.path);
         if (this.path && this.timeout() && !this.isDone()) {
-            const subWindow = GM_openInTab(this.url.toString(), {
+            const subTab = GM_openInTab(this.url.toString(), {
                 active: false,
                 insert: true,
                 setParent: true
             });
-            console.log(subWindow.name);
+            //console.log(subTab.name);
             return (this.done = true);
         }
         return this.isDone();
@@ -244,6 +244,10 @@ class RoomListLoader {
         this.parent_area_id = parentAreaId
         this.area_id = areaId
     }
+    autoLoad(){
+        addToPresentQueue(window.presentQueue, this.page, page_size);
+        this.page += 1;
+    }
     /**
      * 添加到队列中
      * @param {PresentQueue} queue 队列
@@ -252,7 +256,7 @@ class RoomListLoader {
         this.load(page, page_size, function (res) {
             if (res.message == 'success' && res.data && res.data.count && res.data.list && res.data.list.length) {
                 var list = res.data.list;
-                console.log(list);
+                //console.log(list);
                 list.filter(function (value) {
                     return value.pendant_info;
                 }).filter(function (value) {
