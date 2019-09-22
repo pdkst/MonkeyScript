@@ -223,14 +223,6 @@ class PresentQueue {
             return !value.done;
         });
     }
-    debugEnable() {
-        var queue = this.getPresentQueue();
-        if (queue && queue != this) {
-            return queue.debugEnable();
-        } else {
-            return window.debugEnable && this.debug;
-        }
-    }
 }
 
 class RoomListLoader {
@@ -245,7 +237,7 @@ class RoomListLoader {
         this.area_id = areaId
     }
     autoLoad(){
-        this.addToPresentQueue(window.presentQueue, this.page, page_size);
+        this.addToPresentQueue(unsafeWindow.presentQueue, this.page, this.page_size);
         this.page += 1;
     }
     /**
