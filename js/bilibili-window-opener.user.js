@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.4.1
+// @version      1.5.4
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面
 // @author       pdkst
 // @match        *://live.bilibili.com/*
 // @require      https://static.hdslb.com/live-static/libs/jquery/jquery-1.11.3.min.js
-// @grant        none
+// @grant        GM_openInTab
 // @license      LGPLv3
 // @supportURL   https://github.com/pdkst/MonkeyScript/issues
 // ==/UserScript==
@@ -48,6 +48,7 @@ class Present {
         if (path) {
             this.url = new URL(path);
             this.pathname = this.url.pathname;
+            this.url.hash = 'autoClose';
         }
     }
 
@@ -58,8 +59,12 @@ class Present {
     open() {
         //console.log("open ... " + this.path);
         if (this.path && this.timeout() && !this.isDone()) {
-            const subWindow = window.open(this.path, this.liver);
-            console.log(subWindow.name);
+            const subTab = GM_openInTab(this.url.toString(), {
+                active: false,
+                insert: true,
+                setParent: true
+            });
+            //console.log(subTab.name);
             return (this.done = true);
         }
         return this.isDone();
@@ -126,7 +131,8 @@ class PresentQueue {
         var tvRegex = /(.+)[:：]\s?(.+)送给(.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧/ig;
         var tvRegex2 = /(.+)[:：]\s?(.+)送给(.+)(\d+)个(.+)，点击前往TA的直播间去抽奖吧~/ig;
         var tvRegex3 = /(.+)[:：]\s?(.+)送给(.+)(\d+)个(.+)，点击前往抽奖吧/ig;
-        var matchArr = tvRegex.exec(text) || tvRegex2.exec(text) || tvRegex3.exec(text);
+        var tvRegex4 = /(.+)[:：]\s?(.+)投喂(.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧/ig;
+        var matchArr = tvRegex.exec(text) || tvRegex2.exec(text) || tvRegex3.exec(text) || tvRegex4.exec(text);
         if (matchArr && matchArr.length == 6) {
             console.log("match = " + matchArr);
             var giver = matchArr[2];
@@ -189,14 +195,17 @@ class PresentQueue {
             case "最终糕能":
             case "幻乐之声":
             case "处女座流星雨":
+            case "魔法光环":
+            case "嗨翻全城":
                 now.setTime(now.getTime() + 2 * 60 * 1000);
                 return now;
             case "摩天大楼":
                 now.setTime(now.getTime() + 60 * 1000);
                 return now;
             case "小时总榜":
-                return now;
             default:
+                //延时5秒打开，防止短期内打开过多
+                now.setSeconds(now.getSeconds() + 5);
                 return now;
         }
     }
@@ -217,14 +226,6 @@ class PresentQueue {
             return !value.done;
         });
     }
-    debugEnable() {
-        var queue = this.getPresentQueue();
-        if (queue && queue != this) {
-            return queue.debugEnable();
-        } else {
-            return window.debugEnable && this.debug;
-        }
-    }
 }
 
 class RoomListLoader {
@@ -238,6 +239,10 @@ class RoomListLoader {
         this.parent_area_id = parentAreaId
         this.area_id = areaId
     }
+    autoLoad(){
+        this.addToPresentQueue(unsafeWindow.presentQueue, this.page, this.page_size);
+        this.page += 1;
+    }
     /**
      * 添加到队列中
      * @param {PresentQueue} queue 队列
@@ -246,7 +251,7 @@ class RoomListLoader {
         this.load(page, page_size, function (res) {
             if (res.message == 'success' && res.data && res.data.count && res.data.list && res.data.list.length) {
                 var list = res.data.list;
-                console.log(list);
+                //console.log(list);
                 list.filter(function (value) {
                     return value.pendant_info;
                 }).filter(function (value) {
@@ -372,7 +377,7 @@ class RoomListLoader {
             clearInterval(intervalId);
             window.close();
         }
-        loadPresentToParent();
+        //loadPresentToParent();
     }
 
     function loadPresentToParent() {
@@ -409,11 +414,13 @@ class RoomListLoader {
 
     //页面加载完成后再开始执行
     $("#chat-popup-area-vm").ready(function () {
+        var window = unsafeWindow || window;
         window.getPresentQueue = getPresentQueue;
         window.presentQueue = getPresentQueue();
         window.roomListLoader = new RoomListLoader();
         try {
-            if (window.name) {
+            var hash = window.location.hash || '#';
+            if (window.name || hash.includes("autoClose")) {
                 //window.opener && srcArr.includes(window.opener.window.location.pathname) || window.name
                 //被打开的窗口最多于100秒后关闭
                 setTimeout(window.close, config.maxAliveTime);
