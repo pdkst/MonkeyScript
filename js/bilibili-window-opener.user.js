@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.5.4
+// @version      1.5.5
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -11,6 +11,7 @@
 // @supportURL   https://github.com/pdkst/MonkeyScript/issues
 // ==/UserScript==
 
+var $ = window.$ || window.jQuery;
 class ConsoleProxy {
     debug(str, ...optionalParams) {
         if (window.getPresentQueue) {
@@ -138,7 +139,7 @@ class PresentQueue {
             var giver = matchArr[2];
             var liver = matchArr[3];
             var type = matchArr[5];
-            var presentNew = new Present(href, this.getTime(type), liver, type, giver);
+            var presentNew = new Present(href, this.getTime(type, 2), liver, type, giver);
             return this.addToQueue(presentNew);
         }
         else {
@@ -155,8 +156,8 @@ class PresentQueue {
             var giver = matchArr[1];
             var liver = matchArr[2];
             var type = matchArr[3];
-            console.log("addPresentByMember = " + liver);
-            var presentNew = new Present(href, this.getTime(type), liver, type, giver);
+            //console.log("addPresentByMember = " + liver);
+            var presentNew = new Present(href, this.getTime(type, 0), liver, type, giver);
             return this.addToQueue(presentNew);
         }
         else {
@@ -172,8 +173,8 @@ class PresentQueue {
             var giver = "system";
             var liver = matchArr[1];
             var type = matchArr[2];
-            console.log("addPresentBySystem = " + liver);
-            var presentNew = new Present(href, this.getTime(type), liver, type, giver);
+            //console.log("addPresentBySystem = " + liver);
+            var presentNew = new Present(href, this.getTime(type, 0), liver, type, giver);
             return this.addToQueue(presentNew);
         }
         else {
@@ -185,7 +186,7 @@ class PresentQueue {
      * 根据类型获取时间
      * @param {string} type 类型
      */
-    getTime(type) {
+    getTime(type, delay) {
         console.log("type = " + type);
         var now = new Date();
         switch (type) {
@@ -197,15 +198,18 @@ class PresentQueue {
             case "处女座流星雨":
             case "魔法光环":
             case "嗨翻全城":
-                now.setTime(now.getTime() + 2 * 60 * 1000);
+                //2分钟
+                now.setMinutes(now.getMinutes() + 2);
                 return now;
             case "摩天大楼":
-                now.setTime(now.getTime() + 60 * 1000);
+                //1分钟
+                now.setMinutes(now.getMinutes() + 1);
                 return now;
             case "小时总榜":
             default:
                 //延时5秒打开，防止短期内打开过多
-                now.setSeconds(now.getSeconds() + 5);
+                now.setMinutes(now.getMinutes() + (delay || 0));
+                delay || now.setSeconds(now.getSeconds() + 5);
                 return now;
         }
     }
@@ -239,7 +243,7 @@ class RoomListLoader {
         this.parent_area_id = parentAreaId
         this.area_id = areaId
     }
-    autoLoad(){
+    autoLoad() {
         this.addToPresentQueue(unsafeWindow.presentQueue, this.page, this.page_size);
         this.page += 1;
     }
