@@ -16,3 +16,8 @@
 [greasyfork-dmhy]: https://greasyfork.org/scripts/24110-%E5%8A%A8%E6%BC%AB%E8%8A%B1%E5%9B%AD%E6%89%B9%E9%87%8F%E4%B8%8B%E8%BD%BD-dmhy/code/%E5%8A%A8%E6%BC%AB%E8%8A%B1%E5%9B%AD%E6%89%B9%E9%87%8F%E4%B8%8B%E8%BD%BD\(dmhy\).user.js
 [github-dmhy]: https://github.com/pdkst/MonkeyScript/raw/master/js/magnet-all.user.js
 
+### 感谢
+
+[![jetbrains](http://pdkst.github.io/static/images/jetbrains_logos/jetbrains.svg)](https://www.jetbrains.com/?from=MonkeyScript)
+
+感谢[jetbrains团队](https://www.jetbrains.com/?from=MonkeyScript)对开源项目的支持，[详情](https://www.jetbrains.com/community/opensource/)
