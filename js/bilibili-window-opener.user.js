@@ -11,29 +11,8 @@
 // @supportURL   https://github.com/pdkst/MonkeyScript/issues
 // ==/UserScript==
 
-var $ = window.$ || window.jQuery;
-class ConsoleProxy {
-    debug(str, ...optionalParams) {
-        if (window.getPresentQueue) {
-            window.getPresentQueue().debugEnable() && console.debug.apply(console, arguments);
-        } else {
-            console.debug.apply(console, arguments);
-        }
-    }
-    log(str, ...optionalParams) {
-        if (window.getPresentQueue) {
-            window.getPresentQueue().debugEnable() && console.log.apply(console, arguments);
-        } else {
-            console.log.apply(console, arguments);
-        }
-    }
-    warn(str, ...optionalParams) {
-        console.warn.apply(console, arguments);
-    }
-    error(str, ...optionalParams) {
-        console.error.apply(console, arguments);
-    }
-}
+const $ = window.$ || window.jQuery;
+
 /**
  * 礼物事件
  * @param path url地址
@@ -75,7 +54,7 @@ class Present {
         if (!this.date) {
             return true;
         }
-        return !!(this.date < new Date());
+        return (this.date < new Date());
     }
 
 }
@@ -109,6 +88,7 @@ class PresentQueue {
         }
         console.log("Text does not match: \n" + text);
     }
+
     /**
      * 添加新的礼物到队列中
      * @param {Present} presentNew 新的礼物
@@ -116,42 +96,42 @@ class PresentQueue {
     addToQueue(presentNew) {
         if (presentNew.pathname) {
             var presentExists = this.queue.filter(function (e) {
-                return e.pathname == presentNew.pathname;
+                return e.pathname === presentNew.pathname;
             });
             if (!presentExists.length) {
                 this.queue.push(presentNew);
                 return presentNew;
-            }
-            else {
+            } else {
                 console.log("Present Queue Exists ! " + presentNew.giver + ' to ' + presentNew.liver);
                 return presentExists[0];
             }
         }
     }
+
     addPresentByGiver(text, href) {
         var tvRegex = /(.+)[:：]\s?(.+)送给(.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧/ig;
         var tvRegex2 = /(.+)[:：]\s?(.+)送给(.+)(\d+)个(.+)，点击前往TA的直播间去抽奖吧~/ig;
         var tvRegex3 = /(.+)[:：]\s?(.+)送给(.+)(\d+)个(.+)，点击前往抽奖吧/ig;
         var tvRegex4 = /(.+)[:：]\s?(.+)投喂(.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧/ig;
         var matchArr = tvRegex.exec(text) || tvRegex2.exec(text) || tvRegex3.exec(text) || tvRegex4.exec(text);
-        if (matchArr && matchArr.length == 6) {
+        if (matchArr && matchArr.length === 6) {
             console.log("match = " + matchArr);
             var giver = matchArr[2];
             var liver = matchArr[3];
             var type = matchArr[5];
             var presentNew = new Present(href, this.getTime(type, 2), liver, type, giver);
             return this.addToQueue(presentNew);
-        }
-        else {
+        } else {
             debugger;
         }
     }
+
     addPresentByMember(text, href) {
         var memberRegex = /(.+)在(.+)的房间开通了(.+)并触发了抽奖，点击前往TA的房间去抽奖吧/ig;
         var memberRegex2 = /(.+)[:：]\s?主播(.+) 的玉兔在直播间触发(.+)，即将送出丰厚大礼，快来抽奖吧！/ig;
 
         var matchArr = memberRegex.exec(text) || memberRegex2.exec(text);
-        if (matchArr && matchArr.length == 4) {
+        if (matchArr && matchArr.length === 4) {
             console.log("match = " + matchArr);
             var giver = matchArr[1];
             var liver = matchArr[2];
@@ -159,11 +139,11 @@ class PresentQueue {
             //console.log("addPresentByMember = " + liver);
             var presentNew = new Present(href, this.getTime(type, 0), liver, type, giver);
             return this.addToQueue(presentNew);
-        }
-        else {
+        } else {
             debugger;
         }
     }
+
     addPresentBySystem(text, href) {
         var hourRegex = /恭喜(.+)夺得(.+)小时总榜第一名！赶快来围观吧~/ig;
         var hourRegex2 = /恭喜主播(.+)获得上一周全区(.+)！哔哩哔哩 \(゜-゜\)つロ 干杯~/ig;
@@ -176,15 +156,16 @@ class PresentQueue {
             //console.log("addPresentBySystem = " + liver);
             var presentNew = new Present(href, this.getTime(type, 0), liver, type, giver);
             return this.addToQueue(presentNew);
-        }
-        else {
+        } else {
             debugger;
         }
 
     }
+
     /**
      * 根据类型获取时间
      * @param {string} type 类型
+     * @param delay 延时类型
      */
     getTime(type, delay) {
         console.log("type = " + type);
@@ -225,6 +206,7 @@ class PresentQueue {
             }
         }
     }
+
     removeDone() {
         this.queue = this.queue.filter(function (value) {
             return !value.done;
@@ -236,25 +218,29 @@ class RoomListLoader {
     constructor(parentAreaId, areaId) {
         this.platform = "web";
         this.sort_type = "income";
-        this.tag_version = 1
-        this.cate_id = 0
-        this.page = 1
-        this.page_size = 30
-        this.parent_area_id = parentAreaId
+        this.tag_version = 1;
+        this.cate_id = 0;
+        this.page = 1;
+        this.page_size = 30;
+        this.parent_area_id = parentAreaId;
         this.area_id = areaId
     }
+
     autoLoad() {
         this.addToPresentQueue(unsafeWindow.presentQueue, this.page, this.page_size);
         this.page += 1;
     }
+
     /**
      * 添加到队列中
      * @param {PresentQueue} queue 队列
+     * @param page 页码
+     * @param page_size 每页大小
      */
     addToPresentQueue(queue, page, page_size) {
         this.load(page, page_size, function (res) {
-            if (res.message == 'success' && res.data && res.data.count && res.data.list && res.data.list.length) {
-                var list = res.data.list;
+            if (res.message === 'success' && res.data && res.data.count && res.data.list && res.data.list.length) {
+                const list = res.data.list;
                 //console.log(list);
                 list.filter(function (value) {
                     return value.pendant_info;
@@ -265,7 +251,7 @@ class RoomListLoader {
                     for (const key in object) {
                         if (object.hasOwnProperty(key)) {
                             const element = object[key];
-                            if (element.content == '正在抽奖') {
+                            if (element.content === '正在抽奖') {
                                 return true;
                             }
                         }
@@ -281,14 +267,23 @@ class RoomListLoader {
         })
 
     }
+
     load(page, page_size, success) {
         this.page = page || 1;
         this.page_size = page_size || 30
         this.getRoomList(this, success);
 
     }
+
+    /**
+     *
+     * @param param
+     * @param {function} success 成功回调
+     * @returns {never}
+     */
     getRoomList(param, success) {
-        return $.get("https://api.live.bilibili.com/room/v3/area/getRoomList", param).success(success);
+        let $get = $.get("https://api.live.bilibili.com/room/v3/area/getRoomList", param);
+        return $get.success(success);
     }
 }
 
@@ -296,19 +291,19 @@ class RoomListLoader {
     'use strict';
 
     //可变更的配置
-    var config = {
+    const config = {
         //打开时间
         startTime: new Date().getTime(),
         //页面刷新时间 1 hour
-        reloadTime: 1 * 60 * 60 * 1000,
+        reloadTime: 60 * 60 * 1000,
         //最大历史数量
         maxHistory: 7,
         //窗口最大存在时间: 60s
         maxAliveTime: 3 * 60 * 1000,
         //窗口最小存活时间
         minAliveTime: 3 * 1000
-    }
-    config.endTime = new Date()
+    };
+    config.endTime = new Date();
     config.endTime.setTime(config.startTime + config.reloadTime);
 
     console.log("config = ", config);
@@ -327,7 +322,7 @@ class RoomListLoader {
         if (presentLinkArray.length) {
             console.log('现存礼物总数：' + presentLinkArray.length);
             presentLinkArray.each(function (_i, e) {
-                var $e = $(e);
+                const $e = $(e);
                 if ($e && $e.length) {
                     presentQueue.addPresent($e.text(), $e.attr("href"));
                 }
@@ -378,7 +373,9 @@ class RoomListLoader {
         isFinish = isFinish && $("#chat-history-list > div").length != 0;
 
         if (isFinish && aliveTime >= config.minAliveTime) {
-            clearInterval(intervalId);
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
             window.close();
         }
         //loadPresentToParent();
@@ -389,7 +386,7 @@ class RoomListLoader {
         if ($presentLinkArray.length) {
             console.log('额外礼物总数：' + $presentLinkArray.length);
             $presentLinkArray.filter(function (_i, e) {
-                return $(e).parent().parent().css('background-color') == 'rgb(230, 244, 255)';
+                return $(e).parent().parent().css('background-color') === 'rgb(230, 244, 255)';
             }).each(function (_i, e) {
                 const queue = getPresentQueue();
                 if (queue) {
