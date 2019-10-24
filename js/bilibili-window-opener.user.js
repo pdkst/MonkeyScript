@@ -166,7 +166,7 @@ class PresentQueue {
     }
     addPresentBySystem(text, href) {
         var hourRegex = /恭喜(.+)夺得(.+)小时总榜第一名！赶快来围观吧~/ig;
-        var hourRegex2 = /恭喜主播(.+)获得上一周(.+)！哔哩哔哩 (゜-゜)つロ 干杯~/ig;
+        var hourRegex2 = /恭喜主播(.+)获得上一周全区(.+)！哔哩哔哩 \(゜-゜\)つロ 干杯~/ig;
         var matchArr = hourRegex.exec(text) || hourRegex2.exec(text);
         if (matchArr) {
             console.log("match = " + matchArr);
