@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.5.5
-// @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面
+// @version      1.6.0
+// @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面，自动触发地址是【有栖Mana-Official】、【神楽七奈Official】、【物述有栖Official】，或者是当前直播间带有open=1的直播间，open=0则会不在上述三者直播间运行
 // @author       pdkst
 // @match        *://live.bilibili.com/*
 // @require      https://static.hdslb.com/live-static/libs/jquery/jquery-1.11.3.min.js
@@ -421,13 +421,20 @@ class RoomListLoader {
         window.roomListLoader = new RoomListLoader();
         try {
             var hash = window.location.hash || '#';
+            const currentUrl = new URL(location.href);
+            const openSwitch = currentUrl.searchParams.get("open");
+
+            //是否出现关闭开关，如果任意关闭符号出现，则isOpenFalse变为true
+            const isOpenFalse = openSwitch == '0' || openSwitch == 'false' || openSwitch == 'off' || openSwitch != '';
+            const isOpenTrue = openSwitch == '1' || openSwitch == 'true' || openSwitch == 'on';
+
             if (window.name || hash.includes("autoClose")) {
-                //window.opener && srcArr.includes(window.opener.window.location.pathname) || window.name
                 //被打开的窗口最多于100秒后关闭
                 setTimeout(window.close, config.maxAliveTime);
                 //检查礼物是否是否存在
                 var intervalId = setInterval(checkPresentWindow, 1000, config, intervalId);
-            } else if (srcArr.includes(window.location.pathname) || new URL(location.href).searchParams.get("open")) {
+            } else if (srcArr.includes(window.location.pathname) && !isOpenFalse || isOpenTrue) {
+                //配置在列表中的直播间，且不带关闭标志，或者带有open=1标志的任意直播间
                 //循环打开礼物窗口
                 setInterval(circleFunction, 1000);
             }
