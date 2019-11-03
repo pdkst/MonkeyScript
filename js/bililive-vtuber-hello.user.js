@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         B站直播Vtuber问候语
 // @namespace    http://pdkst.github.io/
-// @version      0.3
+// @version      0.4
 // @description  显示配置的vtuber的问候语，每个vtuber都有独特的问候语，才不是不知道，只是打不出来~
 // @author       pdkst
 // @supportURL   https://github.com/pdkst/MonkeyScript/issues
@@ -12,17 +12,26 @@
 // ==/UserScript==
 
 //====类定义===
+class Output {
+    constructor(source) {
+        this.source = source || '';
+    }
+    output() {
+        return this.source;
+    }
+}
 /**
  * 属性替换工具类
  */
-class Template {
+class Template extends Output {
     constructor(source, replaceObject) {
-        this.source = source || '';
+        super(source);
         this.replaceObject = replaceObject || {};
     }
 
     put(key, value) {
         this.replaceObject[key] = value;
+        return this;
     }
 
     output() {
@@ -30,7 +39,10 @@ class Template {
         for (var key in this.replaceObject) {
             if (this.replaceObject.hasOwnProperty(key)) {
                 var value = this.replaceObject[key];
-                target = target.replace('${' + key + '}', value);
+                const evalKey = '${' + key + '}';
+                while (target.indexOf(evalKey) != -1) {
+                    target = target.replace(evalKey, value);
+                }
             }
         }
         return target;
@@ -38,7 +50,7 @@ class Template {
 }
 
 class VtuberConfig {
-    constructor(funName, emoji, ohayo, konichiwa, konbawa, byebye, siha, title, titleInfo) {
+    constructor(funName, emoji, ohayo, konichiwa, konbawa, byebye, siha, title, titleInfo, ext) {
         this.funName = funName || '';
         this.emoji = emoji || '';
         this.ohayo = ohayo || '';
@@ -48,6 +60,7 @@ class VtuberConfig {
         this.siha = siha || '';
         this.title = title || '';
         this.titleInfo = titleInfo || '';
+        this.ext = ext || [];
     }
 }
 var global_vtuber_config;
@@ -56,7 +69,7 @@ function GlobalVtuberConfig() {
         var config = {};
         config['/'] = new VtuberConfig('粉丝名', '❤', 'おはよ。', 'こにちは', 'こんばんは', 'お疲れ様', '❤♪', 'VTUBER问候语', '2019-10-6 22:04:14');
         config['/3822389'] = new VtuberConfig('黑白狐', '🐾', 'mahamaha', 'mahamaha', 'mahamaha', 'mabamaba', '❤🐾♪', 'VTUBER问候语', '2019-8-17 21:26:13');
-        config['/14917277'] = new VtuberConfig('湊阿夸', '⚓', 'おはようござりました！', '', 'こんあくあ～', 'おつあくあ～', '❤⚓♪', 'VTUBER问候语', '2019-8-21 22:06:18');
+        config['/14917277'] = new VtuberConfig('湊阿夸', '⚓', 'おはようござりました！', '', 'こんあくあ～', 'おつあくあ～', '❤⚓♪', 'VTUBER问候语', '2019-8-21 22:06:18', ['测试输出']);
         config['/12770821'] = new VtuberConfig('小肉干', '✿', 'おはようござりました！', '', 'こんばんは', 'お疲れ様', '❤✿♪❀♪', 'VTUBER问候语', '2019-8-24 16:49:59');
         config['/14052636'] = new VtuberConfig('Shiori', '🍄', 'おは堕天使*ଘ(੭*ˊᵕˋ)੭* ੈ🍄‧₊˚', '', 'ユメ堕つ', 'お疲れ様', '❤🍄♪', 'VTUBER问候语', '2019-9-7 23:04:08');
         config['/14327465'] = new VtuberConfig('花园猫', '🍯', 'おはセレナ', '', 'こんセレナ！', 'お疲れ様', '❤🍯♪', 'VTUBER问候语', '2019-10-6 22:06:19');
@@ -65,36 +78,68 @@ function GlobalVtuberConfig() {
     return config;
 }
 
+class ModelCreator extends Output {
+    constructor(config) {
+        super();
+        this.config = config || {};
+        //正序输出
+        this.prefix = [];
+        this.subfix = [];
+        this.prefix.push('<div class="announcement-cntr">');
+        this.subfix.unshift('</div>');
+        this.prefix.push('<div class="header">');
+        this.prefix.push('<p>VTUBER问候语 <span>' + (config.titleInfo || '') + '</span> </p>');
+        //关闭header
+        this.prefix.push('</div>');
+
+        //输出content
+        this.prefix.push('<p class="content">');
+        this.prefix.push('<ul>');
+        this.prefix.push('<li>粉丝名：' + (config.funName || '') + '</li>');
+        this.prefix.push('<li>粉丝标记：' + (config.emoji || '') + '</li>');
+        this.prefix.push('<li>早上好：' + (config.ohayo || '') + '</li>');
+        this.prefix.push('<li>中午好：' + (config.konichiwa || '') + '</li>');
+        this.prefix.push('<li>晚上好：' + (config.konbawa || '') + '</li>');
+        this.prefix.push('<li>结束语：' + (config.byebye || '') + '</li>');
+        this.prefix.push('<li>应援语：' + (config.siha || '') + '</li>');
+        this.prefix.push('</ul>');
+        this.prefix.push('</p>');
+
+        //输出content
+        if (config && config.ext && config.ext.length) {
+            this.prefix.push('<p class="content">');
+            this.prefix.push('<ul>');
+            let _prefix = this.prefix;
+            config.ext.forEach(function (value, _index, array) {
+                _prefix.push('<li>' + (value || '') + '</li>');
+            })
+            this.prefix.push('</ul>');
+            this.prefix.push('</p>');
+        }
+    }
+
+    output() {
+        const p = this.prefix || [];
+        const s = this.subfix || [];
+        return (p.join("") || '') + (s.join("") || '');
+    }
+}
+
 (function ($) {
     'use strict';
     var vtuberConfig = getVtuberConfig(window.location.pathname);
-    if(!vtuberConfig){
+    if (!vtuberConfig) {
         return;
     }
     if ($("#v_fix_114514").length == 0) {
         var styleHtml = '<style id="v_fix_114514"> .announcement-cntr { min-height: 120px; padding: 16px 20px; background: #fff; border: 1px solid #e9eaec; border-radius: 12px; margin-bottom: 10px; } .announcement-cntr .content{ padding-top: 12px; border-top: 1px solid #e9eaec; margin-top: 15px; font-size: 14px; color: #333; letter-spacing: 0; line-height: 21px; word-wrap: break-word; } .announcement-cntr p { margin: 0; } .announcement-cntr .header p { font-size: 16px; color: #23ade5; } .announcement-cntr .header p span { float: right; line-height: 18px; } .announcement-cntr .header p .icon-edit, .announcement-cntr .header p span { display: inline-block; color: #999; font-size: 12px; } </style>'
         $("head").after(styleHtml);
     };
-    var modelHtml = '<div class="announcement-cntr">' +
-        '<div class="header">' +
-        '<p>VTUBER问候语 <span>${titleInfo}</span> </p>' +
-        '</div>' +
-        '<p class="content">' +
-        '<ul>' +
-        '<li>粉丝名：${funName}</li>' +
-        '<li>粉丝标记：${emoji}</li>' +
-        '<li>早上好：${ohayo}</li>' +
-        '<li>中午好：${konichiwa}</li>' +
-        '<li>晚上好：${konbawa}</li>' +
-        '<li>结束语：${byebye}</li>' +
-        '<li>应援语：${siha}</li>' +
-        '</ul>' +
-        '</p>' +
-        '</div>';
+
     var $root = $('#sections-vm > div.section-block.f-clear.z-section-blocks > div.right-container');
     //生成模板区域
-    var templateHtml = new Template(modelHtml, vtuberConfig);
-    var $popupArea = $(templateHtml.output());
+    var outputHtml = new ModelCreator(vtuberConfig).output();
+    var $popupArea = $(outputHtml);
     $root.prepend($popupArea);
     // 方法区
 
