@@ -345,9 +345,9 @@ class RoomListLoader {
     /**
      * 检查是否应该关闭窗口
      * @param {Object} config 配置
-     * @param {number} intervalId 自动的任务id
+     * @param {function} funcGetIntervalId 获取自动的任务id
      */
-    function checkPresentWindow(config, intervalId) {
+    function checkPresentWindow(config, funcGetIntervalId) {
         //iframe直接关闭，跨域
         var $framePlayer = $('#player-ctnr > div > iframe');
         var $frameLive = $('#live > div.live-wrapper > div > div > iframe');
@@ -373,8 +373,12 @@ class RoomListLoader {
         isFinish = isFinish && $("#chat-history-list > div").length != 0;
 
         if (isFinish && aliveTime >= config.minAliveTime) {
-            if (intervalId) {
-                clearInterval(intervalId);
+            debugger;
+            if (funcGetIntervalId) {
+                const intervalId = funcGetIntervalId();
+                if (intervalId) {
+                    clearInterval(intervalId);
+                }
             }
             window.close();
         }
@@ -425,14 +429,16 @@ class RoomListLoader {
             const openSwitch = currentUrl.searchParams.get("open");
 
             //是否出现关闭开关，如果任意关闭符号出现，则isOpenFalse变为true
-            const isOpenFalse = openSwitch == '0' || openSwitch == 'false' || openSwitch == 'off' || openSwitch != '';
-            const isOpenTrue = openSwitch == '1' || openSwitch == 'true' || openSwitch == 'on';
+            const isOpenFalse = openSwitch == 0 || openSwitch == 'false' || openSwitch == 'off' || openSwitch == '';
+            const isOpenTrue = openSwitch == 1 || openSwitch == 'true' || openSwitch == 'on';
 
             if (window.name || hash.includes("autoClose")) {
                 //被打开的窗口最多于100秒后关闭
                 setTimeout(window.close, config.maxAliveTime);
                 //检查礼物是否是否存在
-                var intervalId = setInterval(checkPresentWindow, 1000, config, intervalId);
+                var intervalId = setInterval(checkPresentWindow, 1000, config, function () {
+                    return intervalId;
+                });
             } else if (srcArr.includes(window.location.pathname) && !isOpenFalse || isOpenTrue) {
                 //配置在列表中的直播间，且不带关闭标志，或者带有open=1标志的任意直播间
                 //循环打开礼物窗口
