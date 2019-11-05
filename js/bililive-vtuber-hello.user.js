@@ -67,12 +67,13 @@ var global_vtuber_config;
 function GlobalVtuberConfig() {
     if (!global_vtuber_config) {
         var config = {};
-        config['/'] = new VtuberConfig('粉丝名', '❤', 'おはよ。', 'こにちは', 'こんばんは', 'お疲れ様', '❤♪', 'VTUBER问候语', '2019-10-6 22:04:14');
+        config['/'] = new VtuberConfig('粉丝名', '❤', 'おはよ。', 'こにちは', 'こんばんは', 'お疲れ様', '❤♪', 'VTUBER问候语', '2019-10-6 22:04:14', ['测试输出']);
         config['/3822389'] = new VtuberConfig('黑白狐', '🐾', 'mahamaha', 'mahamaha', 'mahamaha', 'mabamaba', '❤🐾♪', 'VTUBER问候语', '2019-8-17 21:26:13');
-        config['/14917277'] = new VtuberConfig('湊阿夸', '⚓', 'おはようござりました！', '', 'こんあくあ～', 'おつあくあ～', '❤⚓♪', 'VTUBER问候语', '2019-8-21 22:06:18', ['测试输出']);
+        config['/14917277'] = new VtuberConfig('湊阿夸', '⚓', 'おはようござりました！', '', 'こんあくあ～', 'おつあくあ～', '❤⚓♪', 'VTUBER问候语', '2019-8-21 22:06:18');
         config['/12770821'] = new VtuberConfig('小肉干', '✿', 'おはようござりました！', '', 'こんばんは', 'お疲れ様', '❤✿♪❀♪', 'VTUBER问候语', '2019-8-24 16:49:59');
         config['/14052636'] = new VtuberConfig('Shiori', '🍄', 'おは堕天使*ଘ(੭*ˊᵕˋ)੭* ੈ🍄‧₊˚', '', 'ユメ堕つ', 'お疲れ様', '❤🍄♪', 'VTUBER问候语', '2019-9-7 23:04:08');
         config['/14327465'] = new VtuberConfig('花园猫', '🍯', 'おはセレナ', '', 'こんセレナ！', 'お疲れ様', '❤🍯♪', 'VTUBER问候语', '2019-10-6 22:06:19');
+        config['/21320551'] = new VtuberConfig('乙民', '♍', 'おはZ〜', 'こにちはZ', 'こんばんZ~', 'おつZ~', '❤♪', 'VTUBER问候语', '2019-11-5 22:04:04');
         global_vtuber_config = config;
     }
     return config;
