@@ -18,6 +18,6 @@
 
 ### 感谢
 
-[![jetbrains](http://pdkst.github.io/static/images/jetbrains_logos/jetbrains.svg)](https://www.jetbrains.com/?from=MonkeyScript)
+[![jetbrains](https://github.com/pdkst/MonkeyScript/raw/develop/screenshots/jetbrains_logos/jetbrains.svg)](https://www.jetbrains.com/?from=MonkeyScript)
 
 感谢[jetbrains团队](https://www.jetbrains.com/?from=MonkeyScript)对开源项目的支持，[详情](https://www.jetbrains.com/community/opensource/)
