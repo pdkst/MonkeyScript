@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.7.0
+// @version      1.7.1
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面，自动触发地址是【有栖Mana-Official】、【神楽七奈Official】、【物述有栖Official】，或者是当前直播间带有open=1的直播间，open=0则会不在上述三者直播间运行
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -9,10 +9,10 @@
 // @grant        GM_openInTab
 // @license      LGPLv3
 // @supportURL   https://github.com/pdkst/MonkeyScript/issues
-// @run-at       document-idle
 // ==/UserScript==
 
 const $ = window.$ || window.jQuery;
+const debugEnable = (location.hash || '').indexOf('debug') >= 0;
 
 /**
  * 礼物事件
@@ -103,7 +103,7 @@ class PresentQueue {
                 this.queue.push(presentNew);
                 return presentNew;
             } else {
-                console.log("Present Queue Exists ! " + presentNew.giver + ' to ' + presentNew.liver);
+                debugEnable && console.log("Present Queue Exists ! " + presentNew.giver + ' to ' + presentNew.liver);
                 return presentExists[0];
             }
         }
@@ -115,7 +115,7 @@ class PresentQueue {
         var tvRegex3 = /(.+)[:：]\s?(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往抽奖吧/ig;
         var matchArr = tvRegex.exec(text) || tvRegex2.exec(text) || tvRegex3.exec(text);
         if (matchArr && matchArr.length === 6) {
-            console.log("match = " + matchArr);
+            debugEnable && console.log("match = " + matchArr);
             let giver = matchArr[2];
             let liver = matchArr[3];
             let type = matchArr[5];
@@ -130,7 +130,7 @@ class PresentQueue {
         var tvRegex7 = /(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往抽奖吧/ig;
         matchArr = tvRegex5.exec(text) || tvRegex6.exec(text) || tvRegex7.exec(text);
         if (matchArr && matchArr.length === 5) {
-            console.log("match = " + matchArr);
+            debugEnable && console.log("match = " + matchArr);
             let giver = matchArr[1];
             let liver = matchArr[2];
             let type = matchArr[4];
@@ -147,7 +147,7 @@ class PresentQueue {
 
         var matchArr = memberRegex.exec(text) || memberRegex2.exec(text);
         if (matchArr && matchArr.length === 4) {
-            console.log("match = " + matchArr);
+            debugEnable && console.log("match = " + matchArr);
             var giver = matchArr[1];
             var liver = matchArr[2];
             var type = matchArr[3];
@@ -165,7 +165,7 @@ class PresentQueue {
         var hourRegex3 = /恭喜主播(.+)盛典(.+)，点击前往直播间抽奖~/ig;
         var matchArr = hourRegex.exec(text) || hourRegex2.exec(text) || hourRegex3.exec(text);
         if (matchArr) {
-            console.log("match = " + matchArr);
+            debugEnable && console.log("match = " + matchArr);
             var giver = "system";
             var liver = matchArr[1];
             var type = matchArr[2];
@@ -184,7 +184,7 @@ class PresentQueue {
      * @param delay 延时类型
      */
     getTime(type, delay) {
-        console.log("type = " + type);
+        debugEnable && console.log("type = " + type);
         var now = new Date();
         switch (type) {
             case "小电视飞船":
@@ -274,7 +274,7 @@ class RoomListLoader {
                     }
                     return false;
                 }).forEach(function (value) {
-                    console.log(value)
+                    debugEnable && console.log(value)
                     queue.addToQueue(new Present('https://live.bilibili.com/' + value.roomid, new Date(), value.uname, 'getRoomList', 'none'))
                 });
             } else {
@@ -336,7 +336,7 @@ class RoomListLoader {
 
         var presentLinkArray = $('#chat-history-list > div.chat-item.system-msg.border-box > div > a');
         if (presentLinkArray.length) {
-            console.log('现存礼物总数：' + presentLinkArray.length);
+            debugEnable && console.log('现存礼物总数：' + presentLinkArray.length);
             presentLinkArray.each(function (_i, e) {
                 const $e = $(e);
                 if ($e && $e.length) {
@@ -404,7 +404,7 @@ class RoomListLoader {
     function loadPresentToParent() {
         var $presentLinkArray = $('#chat-history-list > div.chat-item.system-msg.border-box > div > a');
         if ($presentLinkArray.length) {
-            console.log('额外礼物总数：' + $presentLinkArray.length);
+            debugEnable && console.log('额外礼物总数：' + $presentLinkArray.length);
             $presentLinkArray.filter(function (_i, e) {
                 return $(e).parent().parent().css('background-color') === 'rgb(230, 244, 255)';
             }).each(function (_i, e) {
