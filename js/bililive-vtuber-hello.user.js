@@ -9,6 +9,7 @@
 // @require      https://static.hdslb.com/live-static/libs/jquery/jquery-1.11.3.min.js
 // @grant        none
 // @license      LGPLv3
+// @run-at       document-idle
 // ==/UserScript==
 
 //====类定义===

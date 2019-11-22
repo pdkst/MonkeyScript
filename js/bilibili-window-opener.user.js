@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.6.0
+// @version      1.7.0
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面，自动触发地址是【有栖Mana-Official】、【神楽七奈Official】、【物述有栖Official】，或者是当前直播间带有open=1的直播间，open=0则会不在上述三者直播间运行
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -9,6 +9,7 @@
 // @grant        GM_openInTab
 // @license      LGPLv3
 // @supportURL   https://github.com/pdkst/MonkeyScript/issues
+// @run-at       document-idle
 // ==/UserScript==
 
 const $ = window.$ || window.jQuery;
@@ -109,17 +110,31 @@ class PresentQueue {
     }
 
     addPresentByGiver(text, href) {
-        var tvRegex = /(.+)[:：]\s?(.+)送给(.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧/ig;
-        var tvRegex2 = /(.+)[:：]\s?(.+)送给(.+)(\d+)个(.+)，点击前往TA的直播间去抽奖吧~/ig;
-        var tvRegex3 = /(.+)[:：]\s?(.+)送给(.+)(\d+)个(.+)，点击前往抽奖吧/ig;
-        var tvRegex4 = /(.+)[:：]\s?(.+)投喂(.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧/ig;
-        var matchArr = tvRegex.exec(text) || tvRegex2.exec(text) || tvRegex3.exec(text) || tvRegex4.exec(text);
+        var tvRegex = /(.+)[:：]\s?(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧~?/ig;
+        var tvRegex2 = /(.+)[:：]\s?(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往TA的直播间去抽奖吧~?/ig;
+        var tvRegex3 = /(.+)[:：]\s?(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往抽奖吧/ig;
+        var matchArr = tvRegex.exec(text) || tvRegex2.exec(text) || tvRegex3.exec(text);
         if (matchArr && matchArr.length === 6) {
             console.log("match = " + matchArr);
-            var giver = matchArr[2];
-            var liver = matchArr[3];
-            var type = matchArr[5];
-            var presentNew = new Present(href, this.getTime(type, 2), liver, type, giver);
+            let giver = matchArr[2];
+            let liver = matchArr[3];
+            let type = matchArr[5];
+            let presentNew = new Present(href, this.getTime(type, 2), liver, type, giver);
+            return this.addToQueue(presentNew);
+        } else {
+            debugger;
+        }
+        
+        var tvRegex5 = /(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧~?/ig;
+        var tvRegex6 = /(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往TA的直播间去抽奖吧~?/ig;
+        var tvRegex7 = /(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往抽奖吧/ig;
+        matchArr = tvRegex5.exec(text) || tvRegex6.exec(text) || tvRegex7.exec(text);
+        if (matchArr && matchArr.length === 5) {
+            console.log("match = " + matchArr);
+            let giver = matchArr[1];
+            let liver = matchArr[2];
+            let type = matchArr[4];
+            let presentNew = new Present(href, this.getTime(type, 2), liver, type, giver);
             return this.addToQueue(presentNew);
         } else {
             debugger;
@@ -147,7 +162,8 @@ class PresentQueue {
     addPresentBySystem(text, href) {
         var hourRegex = /恭喜(.+)夺得(.+)小时总榜第一名！赶快来围观吧~/ig;
         var hourRegex2 = /恭喜主播(.+)获得上一周全区(.+)！哔哩哔哩 \(゜-゜\)つロ 干杯~/ig;
-        var matchArr = hourRegex.exec(text) || hourRegex2.exec(text);
+        var hourRegex3 = /恭喜主播(.+)盛典(.+)，点击前往直播间抽奖~/ig;
+        var matchArr = hourRegex.exec(text) || hourRegex2.exec(text) || hourRegex3.exec(text);
         if (matchArr) {
             console.log("match = " + matchArr);
             var giver = "system";
