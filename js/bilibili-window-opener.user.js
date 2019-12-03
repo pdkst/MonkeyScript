@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.7.2
+// @version      1.7.3
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面，自动触发地址是【有栖Mana-Official】、【神楽七奈Official】、【物述有栖Official】，或者是当前直播间带有open=1的直播间，open=0则会不在上述三者直播间运行
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -124,7 +124,7 @@ class PresentQueue {
         } else {
             debugger;
         }
-        
+
         var tvRegex5 = /(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧~?/ig;
         var tvRegex6 = /(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往TA的直播间去抽奖吧~?/ig;
         var tvRegex7 = /(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往抽奖吧/ig;
@@ -401,7 +401,9 @@ class RoomListLoader {
         }
         //loadPresentToParent();
     }
-
+    /**
+     * 加载额外的礼物（已废弃）
+     */
     function loadPresentToParent() {
         var $presentLinkArray = $('#chat-history-list > div.chat-item.system-msg.border-box > div > a');
         if ($presentLinkArray.length) {
@@ -440,6 +442,8 @@ class RoomListLoader {
         window.getPresentQueue = getPresentQueue;
         window.presentQueue = getPresentQueue();
         window.roomListLoader = new RoomListLoader();
+        //备用
+        window.room = new RoomListLoader();
         try {
             var hash = window.location.hash || '#';
             const currentUrl = new URL(location.href);
@@ -460,6 +464,11 @@ class RoomListLoader {
                 //配置在列表中的直播间，且不带关闭标志，或者带有open=1标志的任意直播间
                 //循环打开礼物窗口
                 setInterval(circleFunction, 1000);
+                if (currentUrl.searchParams.get("auto") == 1) {
+                    setInterval(function () {
+                        window.roomListLoader.autoLoad();
+                    }, 60 * 1000);
+                }
             }
 
         } catch (error) {
