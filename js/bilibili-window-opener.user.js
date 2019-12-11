@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.7.3
+// @version      1.7.4
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面，自动触发地址是【有栖Mana-Official】、【神楽七奈Official】、【物述有栖Official】，或者是当前直播间带有open=1的直播间，open=0则会不在上述三者直播间运行
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -196,6 +196,7 @@ class PresentQueue {
             case "处女座流星雨":
             case "魔法光环":
             case "嗨翻全城":
+            case "小电视图抽奖":
                 //2分钟
                 now.setMinutes(now.getMinutes() + 2);
                 return now;
