@@ -144,8 +144,9 @@ class PresentQueue {
     addPresentByMember(text, href) {
         var memberRegex = /(.+)在(.+)的房间开通了(.+)并触发了抽奖，点击前往TA的房间去抽奖吧/ig;
         var memberRegex2 = /(.+)[:：]\s?主播(.+) 的玉兔在直播间触发(.+)，即将送出丰厚大礼，快来抽奖吧！/ig;
+        var memberRegex3 = /主播(.+)在(.+)开启了‘(.+)’，快去抽奖呀~/ig;
 
-        var matchArr = memberRegex.exec(text) || memberRegex2.exec(text);
+        var matchArr = memberRegex.exec(text) || memberRegex2.exec(text)|| memberRegex3.exec(text);
         if (matchArr && matchArr.length === 4) {
             debugEnable && console.log("match = " + matchArr);
             var giver = matchArr[1];
