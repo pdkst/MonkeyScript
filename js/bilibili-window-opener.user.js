@@ -165,7 +165,8 @@ class PresentQueue {
         var hourRegex2 = /恭喜主播(.+)获得上一周全区(.+)！哔哩哔哩 \(゜-゜\)つロ 干杯~/ig;
         var hourRegex3 = /恭喜主播(.+)盛典(.+)，点击前往直播间抽奖~/ig;
         var hourRegex4 = /主播(.+)完成(.+)啦~点击前往TA的直播间抽奖吧！/ig;
-        var matchArr = hourRegex.exec(text) || hourRegex2.exec(text) || hourRegex3.exec(text) || hourRegex4.exec(text);
+        var hourRegex5 = /超萌警告：主播(.+)在直播间开启了‘(.+)’，快去围观，有惊喜哦~/ig;
+        var matchArr = hourRegex.exec(text) || hourRegex2.exec(text) || hourRegex3.exec(text) || hourRegex4.exec(text) || hourRegex5.exec(text);
         if (matchArr) {
             debugEnable && console.log("match = " + matchArr);
             var giver = "system";
