@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.7.4
+// @version      1.7.5
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面，自动触发地址是【有栖Mana-Official】、【神楽七奈Official】、【物述有栖Official】，或者是当前直播间带有open=1的直播间，open=0则会不在上述三者直播间运行
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -144,8 +144,9 @@ class PresentQueue {
     addPresentByMember(text, href) {
         var memberRegex = /(.+)在(.+)的房间开通了(.+)并触发了抽奖，点击前往TA的房间去抽奖吧/ig;
         var memberRegex2 = /(.+)[:：]\s?主播(.+) 的玉兔在直播间触发(.+)，即将送出丰厚大礼，快来抽奖吧！/ig;
+        var memberRegex3 = /主播(.+)在(.+)开启了‘(.+)’，快去抽奖呀~/ig;
 
-        var matchArr = memberRegex.exec(text) || memberRegex2.exec(text);
+        var matchArr = memberRegex.exec(text) || memberRegex2.exec(text)|| memberRegex3.exec(text);
         if (matchArr && matchArr.length === 4) {
             debugEnable && console.log("match = " + matchArr);
             var giver = matchArr[1];
@@ -164,7 +165,8 @@ class PresentQueue {
         var hourRegex2 = /恭喜主播(.+)获得上一周全区(.+)！哔哩哔哩 \(゜-゜\)つロ 干杯~/ig;
         var hourRegex3 = /恭喜主播(.+)盛典(.+)，点击前往直播间抽奖~/ig;
         var hourRegex4 = /主播(.+)完成(.+)啦~点击前往TA的直播间抽奖吧！/ig;
-        var matchArr = hourRegex.exec(text) || hourRegex2.exec(text) || hourRegex3.exec(text) || hourRegex4.exec(text);
+        var hourRegex5 = /超萌警告：主播(.+)在直播间开启了‘(.+)’，快去围观，有惊喜哦~/ig;
+        var matchArr = hourRegex.exec(text) || hourRegex2.exec(text) || hourRegex3.exec(text) || hourRegex4.exec(text) || hourRegex5.exec(text);
         if (matchArr) {
             debugEnable && console.log("match = " + matchArr);
             var giver = "system";
@@ -197,6 +199,7 @@ class PresentQueue {
             case "魔法光环":
             case "嗨翻全城":
             case "小电视图抽奖":
+            case "BLS抽奖道具":
                 //2分钟
                 now.setMinutes(now.getMinutes() + 2);
                 return now;
