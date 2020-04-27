@@ -67,7 +67,7 @@ class PresentQueue {
     constructor(name) {
         this.queue = [];
         this.name = name || '';
-        this.debug = window.debugEnable = window.debugEnable || true;
+        this.debug = window.debugEnable = debugEnable || window.debugEnable || true;
     }
 
     addPresent(text, href) {
@@ -114,30 +114,35 @@ class PresentQueue {
             /(.+)[:：]\s?(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧~?/ig,
             /(.+)[:：]\s?(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往TA的直播间去抽奖吧~?/ig,
             /(.+)[:：]\s?(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往抽奖吧/ig,
+            /(.+)[:：]\s?(.+)[送给|投喂](.+)(\d+)个(.+)，.*/ig,
         ];
         var matchArr;
-        tvRegexArray.forEach(function (tvRegex) {
-            if (matchArr = tvRegex.exec(text) && matchArr.length === 6) {
+        for (const tvRegex of tvRegexArray) {
+            matchArr = tvRegex.exec(text)
+            if (matchArr && matchArr.length === 6) {
                 debugEnable && console.log("match = " + matchArr);
                 let giver = matchArr[2];
                 let liver = matchArr[3];
                 let type = matchArr[5];
                 let presentNew = new Present(href, this.getTime(type, 2), liver, type, giver);
                 return this.addToQueue(presentNew);
-            } else {
+            }
+            else {
                 debugger;
             }
-        })
+        }
 
         var tvRegexArray2 = [
-            /(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧~?/ig,
-            /(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往TA的直播间去抽奖吧~?/ig,
-            /(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往抽奖吧/ig,
-            /(.+)[送给|投喂](.+)(\d+)个(.+)，应援能量，穿梭时空，点击前往抽奖吧/ig,
-        ]
-        
-        tvRegexArray2.forEach(function (tvRegex) {
-            if (matchArr = tvRegex.exec(text) && matchArr.length === 5) {
+            /(.+)(?:(?:送给)|(?:投喂))+(.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧~?/ig,
+            /(.+)(?:(?:送给)|(?:投喂))+(.+)(\d+)个(.+)，点击前往TA的直播间去抽奖吧~?/ig,
+            /(.+)(?:(?:送给)|(?:投喂))+(.+)(\d+)个(.+)，点击前往抽奖吧/ig,
+            /(.+)(?:(?:送给)|(?:投喂))+(.+)(\d+)个(.+)，应援能量，穿梭时空，点击前往抽奖吧/ig,
+            /(.+)(?:(?:送给)|(?:投喂))+(.+)(\d+)个(.+)，.*/ig,
+        ];
+
+        for (const tvRegex2 of tvRegexArray2) {
+            matchArr = tvRegex2.exec(text);
+            if (matchArr && matchArr.length === 5) {
                 debugEnable && console.log("match = " + matchArr);
                 let giver = matchArr[1];
                 let liver = matchArr[2];
@@ -146,20 +151,19 @@ class PresentQueue {
                 return this.addToQueue(presentNew);
             } else {
                 debugger;
-            }
-        });
+            }  
+        }
     }
 
     addPresentByMember(text, href) {
         var memberRegexArray = [
-            /(.+)在(.+)的房间开通了(.+)并触发了抽奖，点击前往TA的房间去抽奖吧/ig,
-            /(.+)[:：]\s?主播(.+) 的玉兔在直播间触发(.+)，即将送出丰厚大礼，快来抽奖吧！/ig,
-            /主播(.+)在(.+)开启了‘(.+)’，快去抽奖呀~/ig,
+            /(.+)在(.+)的房间开通了(.+)并触发了抽奖.*/ig,
+            /(.+)[:：]\s?主播(.+) 的玉兔在直播间触发(.+)，.*/ig,
+            /主播(.+)在(.+)开启了‘(.+)’，.*/ig,
         ];
-
-        var matchArr;
-        memberRegexArray.forEach(function (memberRegex) {
-            if (matchArr = memberRegex.exec(text) && matchArr.length === 4) {
+        for (const memberRegex of memberRegexArray) {
+            var matchArr = memberRegex.exec(text);
+            if (matchArr && matchArr.length === 4) {
                 debugEnable && console.log("match = " + matchArr);
                 var giver = matchArr[1];
                 var liver = matchArr[2];
@@ -170,7 +174,7 @@ class PresentQueue {
             } else {
                 debugger;
             }
-        })
+        }
     }
 
     addPresentBySystem(text, href) {
@@ -181,9 +185,10 @@ class PresentQueue {
             /主播(.+)完成(.+)啦~点击前往TA的直播间抽奖吧！/ig,
             /超萌警告：主播(.+)在直播间开启了‘(.+)’，快去围观，有惊喜哦~/ig,
         ]
-        var matchArr;
-        hourRegexArray.forEach(function (hour) {
-            if (matchArr = hour.exec(text)) {
+        for (const hourRegex of hourRegexArray) {
+            
+            var matchArr = hourRegex.exec(text)
+            if (matchArr) {
                 debugEnable && console.log("match = " + matchArr);
                 var giver = "system";
                 var liver = matchArr[1];
@@ -194,7 +199,7 @@ class PresentQueue {
             } else {
                 debugger;
             }
-        })
+        }
 
     }
 
