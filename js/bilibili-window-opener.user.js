@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.7.5
+// @version      1.8.0
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面，自动触发地址是【有栖Mana-Official】、【神楽七奈Official】、【物述有栖Official】，或者是当前直播间带有open=1的直播间，open=0则会不在上述三者直播间运行
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -110,74 +110,91 @@ class PresentQueue {
     }
 
     addPresentByGiver(text, href) {
-        var tvRegex = /(.+)[:：]\s?(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧~?/ig;
-        var tvRegex2 = /(.+)[:：]\s?(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往TA的直播间去抽奖吧~?/ig;
-        var tvRegex3 = /(.+)[:：]\s?(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往抽奖吧/ig;
-        var matchArr = tvRegex.exec(text) || tvRegex2.exec(text) || tvRegex3.exec(text);
-        if (matchArr && matchArr.length === 6) {
-            debugEnable && console.log("match = " + matchArr);
-            let giver = matchArr[2];
-            let liver = matchArr[3];
-            let type = matchArr[5];
-            let presentNew = new Present(href, this.getTime(type, 2), liver, type, giver);
-            return this.addToQueue(presentNew);
-        } else {
-            debugger;
-        }
+        var tvRegexArray = [
+            /(.+)[:：]\s?(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧~?/ig,
+            /(.+)[:：]\s?(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往TA的直播间去抽奖吧~?/ig,
+            /(.+)[:：]\s?(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往抽奖吧/ig,
+        ];
+        var matchArr;
+        tvRegexArray.forEach(function (tvRegex) {
+            if (matchArr = tvRegex.exec(text) && matchArr.length === 6) {
+                debugEnable && console.log("match = " + matchArr);
+                let giver = matchArr[2];
+                let liver = matchArr[3];
+                let type = matchArr[5];
+                let presentNew = new Present(href, this.getTime(type, 2), liver, type, giver);
+                return this.addToQueue(presentNew);
+            } else {
+                debugger;
+            }
+        })
 
-        var tvRegex5 = /(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧~?/ig;
-        var tvRegex6 = /(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往TA的直播间去抽奖吧~?/ig;
-        var tvRegex7 = /(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往抽奖吧/ig;
-        matchArr = tvRegex5.exec(text) || tvRegex6.exec(text) || tvRegex7.exec(text);
-        if (matchArr && matchArr.length === 5) {
-            debugEnable && console.log("match = " + matchArr);
-            let giver = matchArr[1];
-            let liver = matchArr[2];
-            let type = matchArr[4];
-            let presentNew = new Present(href, this.getTime(type, 2), liver, type, giver);
-            return this.addToQueue(presentNew);
-        } else {
-            debugger;
-        }
+        var tvRegexArray2 = [
+            /(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往TA的房间去抽奖吧~?/ig,
+            /(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往TA的直播间去抽奖吧~?/ig,
+            /(.+)[送给|投喂](.+)(\d+)个(.+)，点击前往抽奖吧/ig,
+            /(.+)[送给|投喂](.+)(\d+)个(.+)，应援能量，穿梭时空，点击前往抽奖吧/ig,
+        ]
+        
+        tvRegexArray2.forEach(function (tvRegex) {
+            if (matchArr = tvRegex.exec(text) && matchArr.length === 5) {
+                debugEnable && console.log("match = " + matchArr);
+                let giver = matchArr[1];
+                let liver = matchArr[2];
+                let type = matchArr[4];
+                let presentNew = new Present(href, this.getTime(type, 2), liver, type, giver);
+                return this.addToQueue(presentNew);
+            } else {
+                debugger;
+            }
+        });
     }
 
     addPresentByMember(text, href) {
-        var memberRegex = /(.+)在(.+)的房间开通了(.+)并触发了抽奖，点击前往TA的房间去抽奖吧/ig;
-        var memberRegex2 = /(.+)[:：]\s?主播(.+) 的玉兔在直播间触发(.+)，即将送出丰厚大礼，快来抽奖吧！/ig;
-        var memberRegex3 = /主播(.+)在(.+)开启了‘(.+)’，快去抽奖呀~/ig;
+        var memberRegexArray = [
+            /(.+)在(.+)的房间开通了(.+)并触发了抽奖，点击前往TA的房间去抽奖吧/ig,
+            /(.+)[:：]\s?主播(.+) 的玉兔在直播间触发(.+)，即将送出丰厚大礼，快来抽奖吧！/ig,
+            /主播(.+)在(.+)开启了‘(.+)’，快去抽奖呀~/ig,
+        ];
 
-        var matchArr = memberRegex.exec(text) || memberRegex2.exec(text)|| memberRegex3.exec(text);
-        if (matchArr && matchArr.length === 4) {
-            debugEnable && console.log("match = " + matchArr);
-            var giver = matchArr[1];
-            var liver = matchArr[2];
-            var type = matchArr[3];
-            //console.log("addPresentByMember = " + liver);
-            var presentNew = new Present(href, this.getTime(type, 0), liver, type, giver);
-            return this.addToQueue(presentNew);
-        } else {
-            debugger;
-        }
+        var matchArr;
+        memberRegexArray.forEach(function (memberRegex) {
+            if (matchArr = memberRegex.exec(text) && matchArr.length === 4) {
+                debugEnable && console.log("match = " + matchArr);
+                var giver = matchArr[1];
+                var liver = matchArr[2];
+                var type = matchArr[3];
+                //console.log("addPresentByMember = " + liver);
+                var presentNew = new Present(href, this.getTime(type, 0), liver, type, giver);
+                return this.addToQueue(presentNew);
+            } else {
+                debugger;
+            }
+        })
     }
 
     addPresentBySystem(text, href) {
-        var hourRegex = /恭喜(.+)夺得(.+)小时总榜第一名！赶快来围观吧~/ig;
-        var hourRegex2 = /恭喜主播(.+)获得上一周全区(.+)！哔哩哔哩 \(゜-゜\)つロ 干杯~/ig;
-        var hourRegex3 = /恭喜主播(.+)盛典(.+)，点击前往直播间抽奖~/ig;
-        var hourRegex4 = /主播(.+)完成(.+)啦~点击前往TA的直播间抽奖吧！/ig;
-        var hourRegex5 = /超萌警告：主播(.+)在直播间开启了‘(.+)’，快去围观，有惊喜哦~/ig;
-        var matchArr = hourRegex.exec(text) || hourRegex2.exec(text) || hourRegex3.exec(text) || hourRegex4.exec(text) || hourRegex5.exec(text);
-        if (matchArr) {
-            debugEnable && console.log("match = " + matchArr);
-            var giver = "system";
-            var liver = matchArr[1];
-            var type = matchArr[2];
-            //console.log("addPresentBySystem = " + liver);
-            var presentNew = new Present(href, this.getTime(type, 0), liver, type, giver);
-            return this.addToQueue(presentNew);
-        } else {
-            debugger;
-        }
+        var hourRegexArray = [
+            /恭喜(.+)夺得(.+)小时总榜第一名！赶快来围观吧~/ig,
+            /恭喜主播(.+)获得上一周全区(.+)！哔哩哔哩 \(゜-゜\)つロ 干杯~/ig,
+            /恭喜主播(.+)盛典(.+)，点击前往直播间抽奖~/ig,
+            /主播(.+)完成(.+)啦~点击前往TA的直播间抽奖吧！/ig,
+            /超萌警告：主播(.+)在直播间开启了‘(.+)’，快去围观，有惊喜哦~/ig,
+        ]
+        var matchArr;
+        hourRegexArray.forEach(function (hour) {
+            if (matchArr = hour.exec(text)) {
+                debugEnable && console.log("match = " + matchArr);
+                var giver = "system";
+                var liver = matchArr[1];
+                var type = matchArr[2];
+                //console.log("addPresentBySystem = " + liver);
+                var presentNew = new Present(href, this.getTime(type, 0), liver, type, giver);
+                return this.addToQueue(presentNew);
+            } else {
+                debugger;
+            }
+        })
 
     }
 
