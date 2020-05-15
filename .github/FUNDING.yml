@@ -9,4 +9,4 @@ ko_fi: pdkstudio # Replace with a single Ko-fi username
 #liberapay: # Replace with a single Liberapay username
 #issuehunt: pdkst # Replace with a single IssueHunt username
 #otechie: pdkst # Replace with a single Otechie username
-custom: ['paypal.me/withnoword'] # Replace with up to 4 custom sponsorship URLs e.g., ['link1', 'link2']
+custom: [] # Replace with up to 4 custom sponsorship URLs e.g., ['link1', 'link2']
