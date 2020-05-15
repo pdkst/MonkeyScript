@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         自动打开礼物（beta）
 // @namespace    http://pdkst.github.io/
-// @version      1.8.0
+// @version      1.8.1
 // @description  在待机页面等待时自动打开关闭礼物页面，此脚本并不会领取礼物，只会自动打开需要领礼物的界面，自动触发地址是【有栖Mana-Official】、【神楽七奈Official】、【物述有栖Official】，或者是当前直播间带有open=1的直播间，open=0则会不在上述三者直播间运行
 // @author       pdkst
 // @match        *://live.bilibili.com/*
@@ -360,14 +360,15 @@ class RoomListLoader {
     srcArr.push('/21449083'); //物述有栖
 
     function circleFunction() {
-
-        var presentLinkArray = $('#chat-history-list > div.chat-item.system-msg.border-box > div > a');
+        //#chat-history-list > div.chat-item.system-msg.border-box > div > a
+        //#chat-items > div.chat-item.system-msg.border-box > div > a
+        var presentLinkArray = $('#chat-items > div.chat-item.system-msg.border-box > div > a');
         if (presentLinkArray.length) {
             debugEnable && console.log('现存礼物总数：' + presentLinkArray.length);
             presentLinkArray.each(function (_i, e) {
                 const $e = $(e);
                 if ($e && $e.length) {
-                    presentQueue.addPresent($e.text(), $e.attr("href"));
+                    presentQueue.addPresent($e.text() && $e.text().trim(), $e.attr("href"));
                 }
             });
 
