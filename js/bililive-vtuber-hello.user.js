@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         B站直播Vtuber问候语
 // @namespace    http://pdkst.github.io/
-// @version      0.5
+// @version      0.6
 // @description  显示配置的vtuber的问候语，每个vtuber都有独特的问候语，才不是不知道，只是打不出来~
 // @author       pdkst
 // @supportURL   https://github.com/pdkst/MonkeyScript/issues
@@ -66,7 +66,7 @@ class VtuberConfig {
 
 function GlobalVtuberConfig() {
     var global_vtuber_config = window.global_vtuber_config || {};
-    if (global_vtuber_config && Object.getOwnPropertyNames(global_vtuber_config).length) {
+    if (Object.getOwnPropertyNames(global_vtuber_config).length) {
         return global_vtuber_config;
     }
     const defaultExtendArray = ['不要走：行かないで'];
@@ -86,7 +86,7 @@ function GlobalVtuberConfig() {
 class ModelCreator extends Output {
     constructor(config) {
         super();
-        this.config = config || {};
+        this.config = config = config || {};
         //正序输出
         this.prefix = [];
         this.subfix = [];
@@ -112,7 +112,7 @@ class ModelCreator extends Output {
 
         //输出content
         var extendArray = [];
-        if (config && config.ext && config.ext.length) {
+        if (config.ext && config.ext.length) {
             extendArray = config.ext;
         } else {
             extendArray = GlobalVtuberConfig()["e/"];
