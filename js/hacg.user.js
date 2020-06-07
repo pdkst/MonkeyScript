@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         琉璃神社老司机：快速上车
-// @namespace    https://github.com/pdkst/MonkeyScript
-// @version      0.1096
+// @namespace    https://github.com/pdkst/MonkeyScript/hacg.user
+// @version      0.1097
 // @description  Don't panic.
 // @author       红领巾，pdkst
 // @include      *://hacg.riwee.com/wordpress/*
@@ -21,9 +21,10 @@
 (function () {
     var oldDriver = document.getElementsByClassName('entry-content')[0];
     var childDriver = oldDriver.childNodes;
+    var takeMe;
     for (var i = childDriver.length - 1; i >= 0; i--) // 复杂度提升至 O(n)
         if (takeMe = childDriver[i].textContent.match(/(\w{40})|(([A-Za-z0-9]{2,39})( ?)[\u4e00-\u9fa5 ]{2,}( ?)+(\w{2,37})\b)/g)){
-            for (j = 0; j < takeMe.length; ++j) { // O(1)
+            for (var j = 0; j < takeMe.length; ++j) { // O(1)
                 console.log(takeMe[j]);
                 var hash = takeMe[j].toString().replace(/(\s|[\u4e00-\u9fa5])+/g, '').trim();
                 if (hash.length >= 40) {
