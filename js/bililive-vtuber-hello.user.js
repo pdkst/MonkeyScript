@@ -81,6 +81,7 @@ function GlobalVtuberConfig() {
     config['/21320551'] = new VtuberConfig('乙民', '♍', 'おはZ〜', 'こにちはZ', 'こんばんZ~', 'おつZ~', '❤♍♪', 'VTUBER问候语', '2019-11-5 22:04:04');
     config['/21545232'] = new VtuberConfig('绿粽子', '🦋', 'おはるし〜', 'こにちは', 'こんるしー', 'おつるし~', '❤♪', 'VTUBER问候语', '2019-11-10 21:53:15');
     config['/7811723'] = new VtuberConfig('soy', '', 'sohasoha', 'sohasoha', 'sohasoha', 'sobasoba', '❤♪\\soy/', 'VTUBER问候语', '2020-6-7 20:48:19');
+    config['/7408249'] = new VtuberConfig('兔叽民', '🐰🎀', 'ALOHA～ᕱ⑅ᕱ♥', 'こにちは', 'こんばんは', 'お疲れ様', '❤♪\\みみ/', 'VTUBER问候语', '2020-6-28 21:24:53');
     return window.global_vtuber_config = config;
 }
 
