@@ -135,6 +135,7 @@ class BilibiliDanmu {
     }
 
     close() {
+        this.status = "close"
         this.ws.close();
         console.log('close');
     }
