@@ -53,6 +53,62 @@ class DanmuConfig {
     }
 }
 
+class DanmuPack {
+    data;
+    dataView;
+    packetLength;
+    headerLength;
+    version;
+    operator;
+    sequence;
+
+    static packageSettings = {
+        rawHeaderLen: 16,
+        packetOffset: 0,
+        headerOffset: 4,
+        versionOffset: 6,
+        operatorOffset: 8,
+        seqOffset: 12,
+    }
+
+    constructor(data) {
+        this.data = data;
+        this.dataView = new DataView(data, 0);
+        this.packetLength = this.dataView.getUint32(DanmuPack.packageSettings.packetOffset)
+        this.headerLength = this.dataView.getInt16(DanmuPack.packageSettings.headerOffset);
+        this.version = this.dataView.getInt16(DanmuPack.packageSettings.versionOffset);
+        this.operator = this.dataView.getUint32(DanmuPack.packageSettings.operatorOffset);
+        this.sequence = this.dataView.getUint32(DanmuPack.packageSettings.seqOffset);
+    }
+
+    static packBuffer(bodyBuffer) {
+        const bodyLength = bodyBuffer && bodyBuffer.length || 0
+        const operator = bodyBuffer && bodyBuffer.length && 7 || 2
+        const headerBuf = new ArrayBuffer(DanmuPack.packageSettings.rawHeaderLen);
+        const headerView = new DataView(headerBuf, 0);
+        headerView.setInt32(DanmuPack.packageSettings.packetOffset, DanmuPack.packageSettings.rawHeaderLen + bodyLength);
+        headerView.setInt16(DanmuPack.packageSettings.headerOffset, DanmuPack.packageSettings.rawHeaderLen);
+        headerView.setInt16(DanmuPack.packageSettings.versionOffset, 1);
+        headerView.setInt32(DanmuPack.packageSettings.operatorOffset, operator);
+        headerView.setInt32(DanmuPack.packageSettings.seqOffset, 1);
+        if (!bodyBuffer) {
+            console.log("header = ", headerBuf);
+            return headerBuf;
+        }
+        console.log("header = ", headerBuf)
+        return DanmuPack.mergeArrayBuffer(headerBuf, bodyBuffer);
+    }
+
+    static mergeArrayBuffer(ab1, ab2) {
+        const u81 = new Uint8Array(ab1),
+            u82 = new Uint8Array(ab2),
+            res = new Uint8Array(ab1.byteLength + ab2.byteLength);
+        res.set(u81, 0);
+        res.set(u82, ab1.byteLength);
+        return res.buffer;
+    }
+}
+
 class BilibiliDanmu {
     roomId;
     uid;
@@ -64,19 +120,10 @@ class BilibiliDanmu {
     ws;
     status = "init";
 
-    static packageSettings = {
-        rawHeaderLen: 16,
-        packetOffset: 0,
-        headerOffset: 4,
-        versionOffset: 6,
-        operatorOffset: 8,
-        seqOffset: 12,
-    }
-
     textDecoder = this.getDecoder(true);
     textEncoder = this.getEncoder();
     heartbeatInterval;
-    ;
+    listener;
 
     constructor(roomId, config = {}) {
         this.roomId = roomId;
@@ -108,16 +155,20 @@ class BilibiliDanmu {
         this.sendBuffer(bodyBuf);
     }
 
-    onMessage(event) {
+    async onMessage(event) {
         const data = event.data;
-        const dataView = new DataView(data, 0);
-        var packetLen = dataView.getUint32(BilibiliDanmu.packageSettings.packetOffset);
+        console.log(event);
+        debugger;
+        window.devent = event;
+        let danmuPack = new DanmuPack(await data.arrayBuffer());
+        this.messageHandler(danmuPack);
+    }
+
+    messageHandler(danmuPack) {
+        let dataView = danmuPack.dataView;
+        let packetLen = danmuPack.packetLength;
         if (dataView.byteLength >= packetLen) {
-            var headerLen = dataView.getInt16(BilibiliDanmu.packageSettings.headerOffset);
-            var ver = dataView.getInt16(BilibiliDanmu.packageSettings.versionOffset);
-            var op = dataView.getUint32(BilibiliDanmu.packageSettings.operatorOffset);
-            var seq = dataView.getUint32(BilibiliDanmu.packageSettings.seqOffset);
-            switch (op) {
+            switch (danmuPack.operator) {
                 case 8:
                     this.heartBeat();
                     if (!this.heartbeatInterval) {
@@ -125,27 +176,27 @@ class BilibiliDanmu {
                     }
                     break;
                 case 3:
-                    if (this._listener) this._listener('online', dataView.getInt32(16));
+                    if (this.listener) this.listener('online', dataView.getInt32(16));
                     break;
                 case 5:
-                    var packetView = dataView;
-                    var msg = data;
-                    var msgBody;
-                    for (var offset = 0; offset < msg.byteLength; offset += packetLen) {
-                        packetLen = packetView.getUint32(offset);
-                        headerLen = packetView.getInt16(offset + BilibiliDanmu.packageSettings.headerOffset);
-                        if (ver === 2) {
+                    const msg = danmuPack.data;
+                    for (let offset = 0; offset < msg.byteLength; offset += packetLen) {
+                        packetLen = dataView.getUint32(offset);
+                        let headerLen = dataView.getInt16(offset + DanmuPack.packageSettings.headerOffset);
+                        if (danmuPack.version === 2) {
                             // deflated message
                             const inflate = new Zlib.Inflate(new Uint8Array(msg.slice(offset + headerLen, offset + packetLen)), {resize: true});
                             const inflatedMsg = inflate.decompress();
                             this.ws.onmessage({data: inflatedMsg.buffer});
                         } else if (packetLen) {
-                            msgBody = this.textDecoder.decode(msg.slice(offset + headerLen, offset + packetLen));
+                            let msgBody = this.textDecoder.decode(msg.slice(offset + headerLen, offset + packetLen));
                             if (!msgBody) {
                                 const textDecoder = this.getDecoder(false);
                                 msgBody = textDecoder.decode(msg.slice(offset + headerLen, offset + packetLen));
                             }
-                            if (this._listener) this._listener('msg', msgBody);
+                            if (this.listener) {
+                                this.listener('msg', msgBody);
+                            }
                         }
                     }
                     break;
@@ -158,36 +209,10 @@ class BilibiliDanmu {
     }
 
     sendBuffer(bodyBuffer) {
-        const sendBuffer = this.packBuffer(bodyBuffer);
+        const sendBuffer = DanmuPack.packBuffer(bodyBuffer);
         this.ws.send(sendBuffer);
     }
 
-    packBuffer(bodyBuffer) {
-        const bodyLength = bodyBuffer && bodyBuffer.length || 0
-        const operator = bodyBuffer && bodyBuffer.length && 7 || 2
-        const headerBuf = new ArrayBuffer(BilibiliDanmu.packageSettings.rawHeaderLen);
-        const headerView = new DataView(headerBuf, 0);
-        headerView.setInt32(BilibiliDanmu.packageSettings.packetOffset, BilibiliDanmu.packageSettings.rawHeaderLen + bodyLength);
-        headerView.setInt16(BilibiliDanmu.packageSettings.headerOffset, BilibiliDanmu.packageSettings.rawHeaderLen);
-        headerView.setInt16(BilibiliDanmu.packageSettings.versionOffset, 1);
-        headerView.setInt32(BilibiliDanmu.packageSettings.operatorOffset, operator);
-        headerView.setInt32(BilibiliDanmu.packageSettings.seqOffset, 1);
-        if (!bodyBuffer){
-            console.log("header = ", headerBuf);
-            return headerBuf;
-        }
-        console.log("header = ", headerBuf)
-        return this.mergeArrayBuffer(headerBuf, bodyBuffer);
-    }
-
-    mergeArrayBuffer(ab1, ab2) {
-        const u81 = new Uint8Array(ab1),
-            u82 = new Uint8Array(ab2),
-            res = new Uint8Array(ab1.byteLength + ab2.byteLength);
-        res.set(u81, 0);
-        res.set(u82, ab1.byteLength);
-        return res.buffer;
-    }
 
     close() {
         this.status = "close"
@@ -196,7 +221,7 @@ class BilibiliDanmu {
         clearInterval(this.heartbeatInterval);
     }
 
-    onError(e){
+    onError(e) {
         console.log('onError:', e)
     }
 
@@ -234,13 +259,17 @@ class BilibiliDanmu {
 }
 
 class BilibiliDanmuUtil {
-    static danmu;
     static async init() {
         let w = window.unsafeWindow || window;
         let roomId = w.BilibiliLive.ROOMID;
         let config = await new DanmuConfig(roomId).getConfig();
         config.uid = w.BilibiliLive.UID;
-        this.danmu = new BilibiliDanmu(roomId, config);
-        await this.danmu.connect();
+        window.danmu = new BilibiliDanmu(roomId, config);
+        danmu.listener = (type, msg) => {
+            if (type === "msg") {
+                console.log("msg = " + msg)
+            }
+        }
+        await danmu.connect();
     }
 }
