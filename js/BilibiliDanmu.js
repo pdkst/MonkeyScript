@@ -21,6 +21,7 @@ class RoomInit {
     async getConfig() {
         let roomResponse = await this.getAsync();
 
+
     }
 }
 
@@ -83,6 +84,7 @@ class BilibiliDanmu {
         this.domain = config.domain;
         this.port = config.wss;
         this.token = config.token;
+        this.uid = config.uid || 0;
         console.log(this);
     }
 
@@ -91,6 +93,7 @@ class BilibiliDanmu {
         this.ws.onopen = this.onOpen.bind(this);
         this.ws.onmessage = this.onMessage.bind(this);
         this.ws.onclose = this.close.bind(this);
+        this.ws.onerror = this.onError.bind(this);
     }
 
     onOpen(e) {
@@ -155,19 +158,26 @@ class BilibiliDanmu {
     }
 
     sendBuffer(bodyBuffer) {
+        const sendBuffer = this.packBuffer(bodyBuffer);
+        this.ws.send(sendBuffer);
+    }
+
+    packBuffer(bodyBuffer) {
         const bodyLength = bodyBuffer && bodyBuffer.length || 0
+        const operator = bodyBuffer && bodyBuffer.length && 7 || 2
         const headerBuf = new ArrayBuffer(BilibiliDanmu.packageSettings.rawHeaderLen);
         const headerView = new DataView(headerBuf, 0);
         headerView.setInt32(BilibiliDanmu.packageSettings.packetOffset, BilibiliDanmu.packageSettings.rawHeaderLen + bodyLength);
         headerView.setInt16(BilibiliDanmu.packageSettings.headerOffset, BilibiliDanmu.packageSettings.rawHeaderLen);
         headerView.setInt16(BilibiliDanmu.packageSettings.versionOffset, 1);
-        headerView.setInt32(BilibiliDanmu.packageSettings.operatorOffset, 2);
+        headerView.setInt32(BilibiliDanmu.packageSettings.operatorOffset, operator);
         headerView.setInt32(BilibiliDanmu.packageSettings.seqOffset, 1);
-        if (bodyBuffer) {
-            this.ws.send(this.mergeArrayBuffer(headerBuf, bodyBuffer));
-        } else {
-            this.ws.send(headerBuf);
+        if (!bodyBuffer){
+            console.log("header = ", headerBuf);
+            return headerBuf;
         }
+        console.log("header = ", headerBuf)
+        return this.mergeArrayBuffer(headerBuf, bodyBuffer);
     }
 
     mergeArrayBuffer(ab1, ab2) {
@@ -184,6 +194,10 @@ class BilibiliDanmu {
         this.ws.close();
         console.log('close');
         clearInterval(this.heartbeatInterval);
+    }
+
+    onError(e){
+        console.log('onError:', e)
     }
 
     getEncoder() {
@@ -211,7 +225,8 @@ class BilibiliDanmu {
         } else {
             return {
                 decode: function (buf) {
-                    return decodeURIComponent(unsafeWindow.escape(String.fromCharCode.apply(null, new Uint8Array(buf))));
+                    let fromCharString = String.fromCharCode.apply(null, new Uint8Array(buf));
+                    return decodeURIComponent(unsafeWindow.escape(fromCharString));
                 }
             };
         }
@@ -219,11 +234,13 @@ class BilibiliDanmu {
 }
 
 class BilibiliDanmuUtil {
+    static danmu;
     static async init() {
         let w = window.unsafeWindow || window;
         let roomId = w.BilibiliLive.ROOMID;
         let config = await new DanmuConfig(roomId).getConfig();
-        let danmu = new BilibiliDanmu(roomId, config);
-        await danmu.connect();
+        config.uid = w.BilibiliLive.UID;
+        this.danmu = new BilibiliDanmu(roomId, config);
+        await this.danmu.connect();
     }
 }
