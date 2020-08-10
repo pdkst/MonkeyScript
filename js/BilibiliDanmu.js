@@ -136,7 +136,6 @@ class DanmuPack {
         let nextPackOffset = this.offset + this.packetLength;
         return new DanmuPack(this.data, nextPackOffset);
     }
-
     zlibInflate() {
         const inflate = new Zlib.Inflate(new Uint8Array(this.value), { resize: true });
         const inflatedMsg = inflate.decompress();
@@ -232,6 +231,45 @@ class DanmuPack {
         }
     }
 }
+class DanmuPackIterator {
+
+    first = true;
+    current;
+    /**
+     * 
+     * @param {DanmuPack} current 
+     */
+    constructor(current) {
+        this.current = current;
+    }
+
+    nextPack() {
+        const current = this.current;
+        let nextPackOffset = current.offset + current.packetLength;
+        return new DanmuPack(current.data, nextPackOffset);
+    }
+
+    hasNext() {
+        const current = this.current;
+        return !!current && current.offset + current.packetLength < current.data.byteLength;
+    }
+
+    /**
+     * 迭代器
+     */
+    *[Symbol.iterator]() {
+        yield this.current;
+        while (true) {
+            if (this.current.hasNext()) {
+                this.current = this.nextPack();
+                yield this.current;
+            } else {
+                return;
+            }
+        }
+    }
+
+}
 class BilibiliDanmu {
     roomId;
     uid;
@@ -297,7 +335,6 @@ class BilibiliDanmu {
         let dataView = danmuPack.dataView;
         let packetLen = danmuPack.packetLength;
         if (dataView.byteLength >= packetLen) {
-            debugger;
             switch (danmuPack.operator) {
                 case Operation.AUTH_REPLY:
                     this.heartBeat();
@@ -311,21 +348,18 @@ class BilibiliDanmu {
                     }
                     break;
                 case Operation.SEND_MSG_REPLY:
-                    for (; ;) {
-                        if (danmuPack.version === 2) {
+                    const iterator = new DanmuPackIterator(danmuPack);
+                    for (let pack of iterator) {
+                        if (pack.version === 2) {
                             // deflated message
                             console.log("inflated")
                             //this.messageHandler(danmuPack.zlibInflate());
-                            this.messageHandler(danmuPack.pakoInflate());
-                        } else if (danmuPack.value.byteLength) {
+                            this.messageHandler(pack.pakoInflate());
+                        } else if (pack.value.byteLength) {
                             if (this.listener) {
-                                this.listener('msg', danmuPack.bodyAsJson());
+                                this.listener('msg', pack.bodyAsJson());
                             }
                         }
-                        if (!danmuPack.hasNext()) {
-                            break;
-                        }
-                        danmuPack = danmuPack.next();
                     }
                     break;
             }
@@ -369,9 +403,10 @@ class BilibiliDanmuUtil {
             await $.getScript('https://cdn.bootcdn.net/ajax/libs/pako/1.0.11/pako.min.js')
         }
         let w = window.unsafeWindow || window;
-        let roomId = w.BilibiliLive.ROOMID;
+        let roomId = 21403601 || w.BilibiliLive.ROOMID;
+        roomId = await new RoomInit(roomId).getConfig();
         let config = await new DanmuConfig(roomId).getConfig();
-        config.uid = 21449083 || w.BilibiliLive.UID;
+        config.uid = w.BilibiliLive.UID;
         window.danmu = new BilibiliDanmu(roomId, config);
         danmu.listener = (type, msg) => {
             if (type === "msg") {
