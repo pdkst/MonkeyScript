@@ -77,6 +77,60 @@ class Operation {
     //  MinBusinessOp = 1000
     //  MaxBusinessOp = 10000
 }
+class WebsocketBodyProtocol {
+    // 普通（默认）
+    static VERSION_NORMAL = 0
+    // 用于心跳包
+    static VERSION_INT = 1
+    // 压缩弹幕，可能包含多条（需要解压 zlib/pako）
+    static VERSION_DEFLATE = 2
+}
+
+// https://github.com/hling51325/bilibili-live-danmaku/blob/master/bilibiliMessage.md
+class MessageCommand {
+    /** 弹幕信息 */
+    static DANMU_MSG = 'DANMU_MSG';
+    /** 礼物 */
+    static SEND_GIFT = 'SEND_GIFT';
+    /** 购买舰长 */
+    static GUARD_BUY = 'GUARD_BUY';
+    /** 购买SC(醒目留言) */
+    static SUPER_CHAT_MESSAGE = 'SUPER_CHAT_MESSAGE';
+    /** 删除SC(醒目留言) */
+    static SUPER_CHAT_MESSAGE_DELETE = 'SUPER_CHAT_MESSAGE_DELETE';
+    /** 进入房间消息 */
+    static INTERACT_WORD = 'INTERACT_WORD';
+    static ROOM_BANNER = 'ROOM_BANNER';
+    /** 关注数，粉丝数 */
+    static ROOM_REAL_TIME_MESSAGE_UPDATE = 'ROOM_REAL_TIME_MESSAGE_UPDATE';
+    static NOTICE_MSG = 'NOTICE_MSG';
+    static COMBO_SEND = 'COMBO_SEND';
+    static COMBO_END = 'COMBO_END';
+    static ENTRY_EFFECT = 'ENTRY_EFFECT';
+    static WELCOME_GUARD = 'WELCOME_GUARD';
+    static WELCOME = 'WELCOME';
+    static ROOM_RANK = 'ROOM_RANK';
+    static ACTIVITY_BANNER_UPDATE_V2 = 'ACTIVITY_BANNER_UPDATE_V2';
+    static PANEL = 'PANEL';
+    static SUPER_CHAT_MESSAGE_JPN = 'SUPER_CHAT_MESSAGE_JPN';
+    static USER_TOAST_MSG = 'USER_TOAST_MSG';
+    static ROOM_BLOCK_MSG = 'ROOM_BLOCK_MSG';
+    static LIVE = 'LIVE';
+    static PREPARING = 'PREPARING';
+    static room_admin_entrance = 'room_admin_entrance';
+    static ROOM_ADMINS = 'ROOM_ADMINS';
+    static ROOM_CHANGE = 'ROOM_CHANGE';
+    static COMBO_END = 'COMBO_END';
+    static SEND_GIFT = 'SEND_GIFT';
+    static SPECIAL_GIFT = 'SPECIAL_GIFT';
+
+    /** 抽奖开始 */
+    static ANCHOR_LOT_START = 'ANCHOR_LOT_START';
+    static ANCHOR_LOT_CHECKSTATUS = 'ANCHOR_LOT_CHECKSTATUS';
+
+    /** 小时榜？ */
+    static HOUR_RANK_AWARDS = 'HOUR_RANK_AWARDS';
+}
 
 class DanmuPack {
     // arraybuffer
@@ -136,12 +190,18 @@ class DanmuPack {
         let nextPackOffset = this.offset + this.packetLength;
         return new DanmuPack(this.data, nextPackOffset);
     }
+
+    /**
+     * zlib 解压
+     */
     zlibInflate() {
         const inflate = new Zlib.Inflate(new Uint8Array(this.value), { resize: true });
         const inflatedMsg = inflate.decompress();
         return new DanmuPack(inflatedMsg.buffer);
     }
-
+    /**
+     * pako 解压
+     */
     pakoInflate() {
         const inflate = pako.inflate(new Uint8Array(this.value));
         // debugger;
@@ -232,8 +292,6 @@ class DanmuPack {
     }
 }
 class DanmuPackIterator {
-
-    first = true;
     current;
     /**
      * 
@@ -260,7 +318,7 @@ class DanmuPackIterator {
     *[Symbol.iterator]() {
         yield this.current;
         while (true) {
-            if (this.current.hasNext()) {
+            if (this.hasNext()) {
                 this.current = this.nextPack();
                 yield this.current;
             } else {
@@ -350,7 +408,7 @@ class BilibiliDanmu {
                 case Operation.SEND_MSG_REPLY:
                     const iterator = new DanmuPackIterator(danmuPack);
                     for (let pack of iterator) {
-                        if (pack.version === 2) {
+                        if (pack.version === WebsocketBodyProtocol.VERSION_DEFLATE) {
                             // deflated message
                             console.log("inflated")
                             //this.messageHandler(danmuPack.zlibInflate());
