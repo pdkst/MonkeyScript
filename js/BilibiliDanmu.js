@@ -153,7 +153,7 @@ class DanmuPack {
         packetOffset: 0,
         headerOffset: 4,
         versionOffset: 6,
-        operatorOffset: 8,
+        operationOffset: 8,
         seqOffset: 12,
     }
 
@@ -164,7 +164,7 @@ class DanmuPack {
         this.packetLength = this.dataView.getUint32(DanmuPack.packageSettings.packetOffset)
         this.headerLength = this.dataView.getInt16(DanmuPack.packageSettings.headerOffset);
         this.version = this.dataView.getInt16(DanmuPack.packageSettings.versionOffset);
-        this.operator = this.dataView.getUint32(DanmuPack.packageSettings.operatorOffset);
+        this.operator = this.dataView.getUint32(DanmuPack.packageSettings.operationOffset);
         this.sequence = this.dataView.getUint32(DanmuPack.packageSettings.seqOffset);
         this.value = data.slice(this.offset + this.headerLength, this.offset + this.packetLength);
     }
@@ -209,30 +209,29 @@ class DanmuPack {
     }
 
     /**
-     * 
+     * 打包发送的弹幕包，如果str没有指定，则忽略operation，替换为心跳包
      * @param {String} str 
      */
-    static packString(str) {
+    static packString(str, operation) {
         if (!str) {
-            return DanmuPack.packBuffer();
+            return DanmuPack.packBuffer(str, Operation.HEARTBEAT);
         }
         let bodyBuffer = DanmuPack.textEncoder.encode(str);
-        return DanmuPack.packBuffer(bodyBuffer);
+        return DanmuPack.packBuffer(bodyBuffer, operation);
     }
 
     /**
      * 
      * @param {ArrayBuffer} bodyBuffer 
      */
-    static packBuffer(bodyBuffer) {
+    static packBuffer(bodyBuffer, operation) {
         const bodyLength = bodyBuffer && bodyBuffer.length || 0
-        const operator = bodyBuffer && bodyBuffer.length && 7 || 2
         const headerBuf = new ArrayBuffer(DanmuPack.packageSettings.rawHeaderLen);
         const headerView = new DataView(headerBuf, 0);
         headerView.setInt32(DanmuPack.packageSettings.packetOffset, DanmuPack.packageSettings.rawHeaderLen + bodyLength);
         headerView.setInt16(DanmuPack.packageSettings.headerOffset, DanmuPack.packageSettings.rawHeaderLen);
         headerView.setInt16(DanmuPack.packageSettings.versionOffset, 1);
-        headerView.setInt32(DanmuPack.packageSettings.operatorOffset, operator);
+        headerView.setInt32(DanmuPack.packageSettings.operationOffset, operation);
         headerView.setInt32(DanmuPack.packageSettings.seqOffset, 1);
         if (!bodyBuffer) {
             console.log("header = ", headerBuf);
@@ -367,12 +366,7 @@ class BilibiliDanmu {
     onOpen(e) {
         this.status = 'open';
         console.log(`${name}连接成功`, e);
-        const firstConfig = JSON.stringify({
-            'uid': this.uid || 0,
-            'roomid': this.roomId,
-            'token': this.token
-        });
-        this.send(firstConfig);
+        this.sendAuthPack();
     }
     /**
      * 绑定websocket消息处理方法
@@ -402,6 +396,7 @@ class BilibiliDanmu {
                     break;
                 case Operation.HEARTBEAT_REPLY:
                     if (this.listener) {
+                        //人气值
                         this.listener('online', dataView.getInt32(16));
                     }
                     break;
@@ -409,7 +404,7 @@ class BilibiliDanmu {
                     const iterator = new DanmuPackIterator(danmuPack);
                     for (let pack of iterator) {
                         if (pack.version === WebsocketBodyProtocol.VERSION_DEFLATE) {
-                            // deflated message
+                            // inflated message
                             console.log("inflated")
                             //this.messageHandler(danmuPack.zlibInflate());
                             this.messageHandler(pack.pakoInflate());
@@ -430,11 +425,25 @@ class BilibiliDanmu {
         this.send();
     }
     /**
+     * 发送auth包
+     * @param {Number} roomId 
+     * @param {Number} uid 
+     * @param {String} token 
+     */
+    sendAuthPack(roomId, uid, token) {
+        const authConfigFirst = JSON.stringify({
+            'uid': uid || this.uid || 0,
+            'roomid': roomId || this.roomId,
+            'token': token || this.token
+        });
+        this.send(authConfigFirst, Operation.AUTH);
+    }
+    /**
      * 主动发送
      * @param {String} body 
      */
-    send(body) {
-        const buffer = DanmuPack.packString(body);
+    send(body, operation) {
+        const buffer = DanmuPack.packString(body, operation);
         this.ws.send(buffer);
     }
 
