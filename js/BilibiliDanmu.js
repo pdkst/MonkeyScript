@@ -77,6 +77,60 @@ class Operation {
     //  MinBusinessOp = 1000
     //  MaxBusinessOp = 10000
 }
+class WebsocketBodyProtocol {
+    // 普通（默认）
+    static VERSION_NORMAL = 0
+    // 用于心跳包
+    static VERSION_INT = 1
+    // 压缩弹幕，可能包含多条（需要解压 zlib/pako）
+    static VERSION_DEFLATE = 2
+}
+
+// https://github.com/hling51325/bilibili-live-danmaku/blob/master/bilibiliMessage.md
+class MessageCommand {
+    /** 弹幕信息 */
+    static DANMU_MSG = 'DANMU_MSG';
+    /** 礼物 */
+    static SEND_GIFT = 'SEND_GIFT';
+    /** 购买舰长 */
+    static GUARD_BUY = 'GUARD_BUY';
+    /** 购买SC(醒目留言) */
+    static SUPER_CHAT_MESSAGE = 'SUPER_CHAT_MESSAGE';
+    /** 删除SC(醒目留言) */
+    static SUPER_CHAT_MESSAGE_DELETE = 'SUPER_CHAT_MESSAGE_DELETE';
+    /** 进入房间消息 */
+    static INTERACT_WORD = 'INTERACT_WORD';
+    static ROOM_BANNER = 'ROOM_BANNER';
+    /** 关注数，粉丝数 */
+    static ROOM_REAL_TIME_MESSAGE_UPDATE = 'ROOM_REAL_TIME_MESSAGE_UPDATE';
+    static NOTICE_MSG = 'NOTICE_MSG';
+    static COMBO_SEND = 'COMBO_SEND';
+    static COMBO_END = 'COMBO_END';
+    static ENTRY_EFFECT = 'ENTRY_EFFECT';
+    static WELCOME_GUARD = 'WELCOME_GUARD';
+    static WELCOME = 'WELCOME';
+    static ROOM_RANK = 'ROOM_RANK';
+    static ACTIVITY_BANNER_UPDATE_V2 = 'ACTIVITY_BANNER_UPDATE_V2';
+    static PANEL = 'PANEL';
+    static SUPER_CHAT_MESSAGE_JPN = 'SUPER_CHAT_MESSAGE_JPN';
+    static USER_TOAST_MSG = 'USER_TOAST_MSG';
+    static ROOM_BLOCK_MSG = 'ROOM_BLOCK_MSG';
+    static LIVE = 'LIVE';
+    static PREPARING = 'PREPARING';
+    static room_admin_entrance = 'room_admin_entrance';
+    static ROOM_ADMINS = 'ROOM_ADMINS';
+    static ROOM_CHANGE = 'ROOM_CHANGE';
+    static COMBO_END = 'COMBO_END';
+    static SEND_GIFT = 'SEND_GIFT';
+    static SPECIAL_GIFT = 'SPECIAL_GIFT';
+
+    /** 抽奖开始 */
+    static ANCHOR_LOT_START = 'ANCHOR_LOT_START';
+    static ANCHOR_LOT_CHECKSTATUS = 'ANCHOR_LOT_CHECKSTATUS';
+
+    /** 小时榜？ */
+    static HOUR_RANK_AWARDS = 'HOUR_RANK_AWARDS';
+}
 
 class DanmuPack {
     // arraybuffer
@@ -99,7 +153,7 @@ class DanmuPack {
         packetOffset: 0,
         headerOffset: 4,
         versionOffset: 6,
-        operatorOffset: 8,
+        operationOffset: 8,
         seqOffset: 12,
     }
 
@@ -110,7 +164,7 @@ class DanmuPack {
         this.packetLength = this.dataView.getUint32(DanmuPack.packageSettings.packetOffset)
         this.headerLength = this.dataView.getInt16(DanmuPack.packageSettings.headerOffset);
         this.version = this.dataView.getInt16(DanmuPack.packageSettings.versionOffset);
-        this.operator = this.dataView.getUint32(DanmuPack.packageSettings.operatorOffset);
+        this.operator = this.dataView.getUint32(DanmuPack.packageSettings.operationOffset);
         this.sequence = this.dataView.getUint32(DanmuPack.packageSettings.seqOffset);
         this.value = data.slice(this.offset + this.headerLength, this.offset + this.packetLength);
     }
@@ -137,12 +191,17 @@ class DanmuPack {
         return new DanmuPack(this.data, nextPackOffset);
     }
 
+    /**
+     * zlib 解压
+     */
     zlibInflate() {
         const inflate = new Zlib.Inflate(new Uint8Array(this.value), { resize: true });
         const inflatedMsg = inflate.decompress();
         return new DanmuPack(inflatedMsg.buffer);
     }
-
+    /**
+     * pako 解压
+     */
     pakoInflate() {
         const inflate = pako.inflate(new Uint8Array(this.value));
         // debugger;
@@ -150,30 +209,29 @@ class DanmuPack {
     }
 
     /**
-     * 
+     * 打包发送的弹幕包，如果str没有指定，则忽略operation，替换为心跳包
      * @param {String} str 
      */
-    static packString(str) {
+    static packString(str, operation) {
         if (!str) {
-            return DanmuPack.packBuffer();
+            return DanmuPack.packBuffer(str, Operation.HEARTBEAT);
         }
         let bodyBuffer = DanmuPack.textEncoder.encode(str);
-        return DanmuPack.packBuffer(bodyBuffer);
+        return DanmuPack.packBuffer(bodyBuffer, operation);
     }
 
     /**
      * 
      * @param {ArrayBuffer} bodyBuffer 
      */
-    static packBuffer(bodyBuffer) {
+    static packBuffer(bodyBuffer, operation) {
         const bodyLength = bodyBuffer && bodyBuffer.length || 0
-        const operator = bodyBuffer && bodyBuffer.length && 7 || 2
         const headerBuf = new ArrayBuffer(DanmuPack.packageSettings.rawHeaderLen);
         const headerView = new DataView(headerBuf, 0);
         headerView.setInt32(DanmuPack.packageSettings.packetOffset, DanmuPack.packageSettings.rawHeaderLen + bodyLength);
         headerView.setInt16(DanmuPack.packageSettings.headerOffset, DanmuPack.packageSettings.rawHeaderLen);
         headerView.setInt16(DanmuPack.packageSettings.versionOffset, 1);
-        headerView.setInt32(DanmuPack.packageSettings.operatorOffset, operator);
+        headerView.setInt32(DanmuPack.packageSettings.operationOffset, operation);
         headerView.setInt32(DanmuPack.packageSettings.seqOffset, 1);
         if (!bodyBuffer) {
             console.log("header = ", headerBuf);
@@ -232,6 +290,43 @@ class DanmuPack {
         }
     }
 }
+class DanmuPackIterator {
+    current;
+    /**
+     * 
+     * @param {DanmuPack} current 
+     */
+    constructor(current) {
+        this.current = current;
+    }
+
+    nextPack() {
+        const current = this.current;
+        let nextPackOffset = current.offset + current.packetLength;
+        return new DanmuPack(current.data, nextPackOffset);
+    }
+
+    hasNext() {
+        const current = this.current;
+        return !!current && current.offset + current.packetLength < current.data.byteLength;
+    }
+
+    /**
+     * 迭代器
+     */
+    *[Symbol.iterator]() {
+        yield this.current;
+        while (true) {
+            if (this.hasNext()) {
+                this.current = this.nextPack();
+                yield this.current;
+            } else {
+                return;
+            }
+        }
+    }
+
+}
 class BilibiliDanmu {
     roomId;
     uid;
@@ -271,12 +366,7 @@ class BilibiliDanmu {
     onOpen(e) {
         this.status = 'open';
         console.log(`${name}连接成功`, e);
-        const firstConfig = JSON.stringify({
-            'uid': this.uid || 0,
-            'roomid': this.roomId,
-            'token': this.token
-        });
-        this.send(firstConfig);
+        this.sendAuthPack();
     }
     /**
      * 绑定websocket消息处理方法
@@ -297,7 +387,6 @@ class BilibiliDanmu {
         let dataView = danmuPack.dataView;
         let packetLen = danmuPack.packetLength;
         if (dataView.byteLength >= packetLen) {
-            debugger;
             switch (danmuPack.operator) {
                 case Operation.AUTH_REPLY:
                     this.heartBeat();
@@ -307,25 +396,23 @@ class BilibiliDanmu {
                     break;
                 case Operation.HEARTBEAT_REPLY:
                     if (this.listener) {
+                        //人气值
                         this.listener('online', dataView.getInt32(16));
                     }
                     break;
                 case Operation.SEND_MSG_REPLY:
-                    for (; ;) {
-                        if (danmuPack.version === 2) {
-                            // deflated message
+                    const iterator = new DanmuPackIterator(danmuPack);
+                    for (let pack of iterator) {
+                        if (pack.version === WebsocketBodyProtocol.VERSION_DEFLATE) {
+                            // inflated message
                             console.log("inflated")
                             //this.messageHandler(danmuPack.zlibInflate());
-                            this.messageHandler(danmuPack.pakoInflate());
-                        } else if (danmuPack.value.byteLength) {
+                            this.messageHandler(pack.pakoInflate());
+                        } else if (pack.value.byteLength) {
                             if (this.listener) {
-                                this.listener('msg', danmuPack.bodyAsJson());
+                                this.listener('msg', pack.bodyAsJson());
                             }
                         }
-                        if (!danmuPack.hasNext()) {
-                            break;
-                        }
-                        danmuPack = danmuPack.next();
                     }
                     break;
             }
@@ -338,11 +425,25 @@ class BilibiliDanmu {
         this.send();
     }
     /**
+     * 发送auth包
+     * @param {Number} roomId 
+     * @param {Number} uid 
+     * @param {String} token 
+     */
+    sendAuthPack(roomId, uid, token) {
+        const authConfigFirst = JSON.stringify({
+            'uid': uid || this.uid || 0,
+            'roomid': roomId || this.roomId,
+            'token': token || this.token
+        });
+        this.send(authConfigFirst, Operation.AUTH);
+    }
+    /**
      * 主动发送
      * @param {String} body 
      */
-    send(body) {
-        const buffer = DanmuPack.packString(body);
+    send(body, operation) {
+        const buffer = DanmuPack.packString(body, operation);
         this.ws.send(buffer);
     }
 
@@ -369,9 +470,10 @@ class BilibiliDanmuUtil {
             await $.getScript('https://cdn.bootcdn.net/ajax/libs/pako/1.0.11/pako.min.js')
         }
         let w = window.unsafeWindow || window;
-        let roomId = w.BilibiliLive.ROOMID;
+        let roomId = 21403601 || w.BilibiliLive.ROOMID;
+        roomId = await new RoomInit(roomId).getConfig();
         let config = await new DanmuConfig(roomId).getConfig();
-        config.uid = 21449083 || w.BilibiliLive.UID;
+        config.uid = w.BilibiliLive.UID;
         window.danmu = new BilibiliDanmu(roomId, config);
         danmu.listener = (type, msg) => {
             if (type === "msg") {
