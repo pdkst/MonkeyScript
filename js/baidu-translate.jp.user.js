@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         复制百度翻译日语片假名
 // @namespace    http://pdkst.github.io/
-// @version      0.0.1.beta
+// @version      0.0.3.beta
 // @description  复制百度翻译出的全片假名（对看不懂汉字的vtuber用）
 // @author       pdkst
 // @match        *://fanyi.baidu.com/*
@@ -30,7 +30,7 @@
         function mapToFull(_, e) {
             const $e = $(e);
             var jpan = $e.find('span.japan-output-japan').text().replace(/\s+/ig, '');
-            if (/^[\u0800-\u4e001-9a-zA-Z]+$/.test(jpan)) {
+            if (/^[\u0800-\u4e001-9a-zA-Z？。?.]+$/.test(jpan)) {
                 return jpan;
             }
             if ($e.has('em')) {
