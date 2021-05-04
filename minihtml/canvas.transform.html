@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<!-- 别问为什么在js目录，这个html是测试canvas动画录制的情况，用来生成过场动画的测试 -->
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Canvas测试</title>
+		<style type="text/css">
+			html,
+			body {
+				width: 100%;
+				height: 100%;
+			}
+
+			.main {
+				display: flex;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="canvas" width="1920" height="1080"></canvas>
+		<!-- 播放视频控件，chrome可以直接另存，所以可以不再写保存逻辑 -->
+		<div id="videoContainer">
+			<h2>视频</h2>
+			<video
+				width="100%"
+				height="1080"
+				controls="true"
+				autoplay="true"
+				id="video"
+			></video>
+		</div>
+		<img
+			id="img-center"
+			src="static/img/bilibili.1033927.webp"
+			style="display: none"
+		/>
+	</body>
+	<script type="text/javascript">
+		const canvas = document.querySelector('canvas')
+		const ctx = canvas.getContext('2d')
+		const { width, height } = canvas
+		const imgCenter = document.getElementById('img-center')
+
+		// 清除背景
+		ctx.clearRect(0, 0, width, height)
+		// 设置填充颜色
+		ctx.fillStyle = 'red'
+		ctx.save()
+
+		// 逐帧绘制旋转的方块
+		class Drawable {
+			ctx
+			constructor(ctx) {
+				this.ctx = ctx
+			}
+			draw(time = 0) {}
+		}
+
+		class CenterHeader extends Drawable {
+			img
+			// 位置
+			x
+			y
+			// 图片宽高
+			width
+			height
+			// 中心
+			cx
+			cy
+			// 缩放
+			sx
+			sy
+			scaleAdd = 0
+			// 旋转
+			angle
+			angleAdd = 0.3
+			constructor(ctx, img) {
+				super(ctx)
+				this.img = img
+				this.width = img.width
+				this.height = img.height
+				let canvasWidth = ctx.canvas.width
+				let canvasHeight = ctx.canvas.height
+				this.x = (canvasWidth - img.width) / 2
+				this.y = (canvasHeight - img.height) / 2
+				this.cx = canvasWidth / 2
+				this.cy = canvasHeight / 2
+				this.sx = 0.5
+				this.sy = 0.5
+				this.angle = 0
+			}
+			draw(time = 0) {
+				let ctx = this.ctx
+				let img = this.img
+				ctx.save()
+				ctx.translate(this.cx, this.cy)
+				ctx.rotate((Math.PI * 3) / this.angle)
+				ctx.beginPath()
+				ctx.scale(this.sx, this.sy)
+				ctx.drawImage(img, -this.width / 2, -this.height / 2)
+				ctx.fill()
+				ctx.closePath()
+				ctx.restore()
+
+				this.angle += this.angleAdd
+				this.angleAdd += 0.1
+				this.sx += this.scaleAdd
+				this.sy += this.scaleAdd
+				this.scaleAdd += this.scaleAdd
+			}
+		}
+
+		class BackgroundCovered extends Drawable {
+			x
+			y
+			width
+			widthAdd = 30
+			constructor(ctx) {
+				super(ctx)
+				this.x = ctx.canvas.width / 2
+				this.y = ctx.canvas.height / 2
+				this.width = 0
+			}
+			draw(time = 0) {
+				let rotation = time / 600
+				ctx.beginPath()
+				ctx.fillStyle = 'red'
+				ctx.arc(
+					// 位置
+					this.x,
+					this.y,
+					// 半径
+					this.width,
+					// 开始角度
+					0,
+					// 结束角度 2π，即整个圆
+					Math.PI * 2,
+					// 是否是顺时针
+					true
+				)
+				this.width += this.widthAdd
+				this.widthAdd++
+				ctx.fill()
+				ctx.closePath()
+			}
+		}
+
+		let header = new CenterHeader(ctx, imgCenter)
+		let bg = new BackgroundCovered(ctx)
+
+		function draw(t = 0) {
+			ctx.clearRect(0, 0, width, height)
+			ctx.save()
+			if (t > 1000) {
+				bg.draw(t)
+			}
+			if (t > 3000) {
+				ctx.globalCompositeOperation = 'destination-out'
+				header.scaleAdd = 0.2
+			}
+			header.draw(t)
+			ctx.restore()
+		}
+
+		;(function update(t) {
+			// 每视频帧重绘一次, 频率一般为 1000ms / 屏幕分辨率间隔，t为毫秒
+			draw(t)
+			requestAnimationFrame(update)
+		})(0)
+
+		// 开始录制视频
+		const stream = canvas.captureStream()
+		const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' })
+
+		const data = []
+		recorder.ondataavailable = function (event) {
+			if (event.data && event.data.size) {
+				data.push(event.data)
+			}
+		}
+
+		recorder.onstop = () => {
+			const url = URL.createObjectURL(
+				new Blob(data, { type: 'video/webm' })
+			)
+			document.querySelector('#videoContainer').style.display = 'block'
+			document.querySelector('video').src = url
+		}
+
+		recorder.start()
+		// 6s 后关闭录制
+		setTimeout(() => {
+			recorder.stop()
+		}, 6000)
+	</script>
+</html>
