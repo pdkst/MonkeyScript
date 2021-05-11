@@ -49,6 +49,38 @@
 		ctx.fillStyle = 'red'
 		ctx.save()
 
+		class AnimateCalculator {
+			total = 100
+			value = 0
+			speed = 0.1
+			increaseSpeed = 0.1
+			increase = true
+			decrease = true
+			limit = 10
+			constructor() {}
+			get nextValue() {
+				this.value += this.speed
+				this.inEval()
+				if (this.value > 100) {
+					this.value = 100
+				}
+				return this.value
+			}
+			inEval() {
+				if (this.increase && this.value - 0 < this.limit) {
+					this.speed += this.increaseSpeed
+				} else if (
+					this.decrease &&
+					this.total - this.value < this.limit
+				) {
+					this.speed -= this.increaseSpeed
+				}
+				if (this.speed < this.increaseSpeed) {
+					this.speed = this.increaseSpeed
+				}
+			}
+		}
+
 		// 逐帧绘制旋转的方块
 		class Drawable {
 			ctx
@@ -193,6 +225,6 @@
 		// 6s 后关闭录制
 		setTimeout(() => {
 			recorder.stop()
-		}, 6000)
+		}, 30000)
 	</script>
 </html>
