@@ -15,5 +15,13 @@
 		$('#area-deny-box').remove()
 	})
 	$('#area-deny-box').css('display', 'none')
-	document.querySelector('#area-deny-box').remove()
+	document.querySelector('#area-deny-box')?.remove()
+
+	function removeBlock() {
+		document.querySelector('#area-deny-box').remove()
+	}
+
+	setTimeout(removeBlock, 100)
+	setTimeout(removeBlock, 500)
+	setTimeout(removeBlock, 1500)
 })(window.$ || window.jQuery)
