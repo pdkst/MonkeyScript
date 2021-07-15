@@ -18,7 +18,7 @@
 	document.querySelector('#area-deny-box')?.remove()
 
 	function removeBlock() {
-		document.querySelector('#area-deny-box').remove()
+		document.querySelector('#area-deny-box')?.remove()
 	}
 
 	setTimeout(removeBlock, 100)
