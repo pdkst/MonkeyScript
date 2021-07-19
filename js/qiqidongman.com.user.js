@@ -10,12 +10,16 @@
 
 ;(function ($) {
 	'use strict'
+	var start = new Date().getTime()
 	$(removeBlock)
 
 	function removeBlock() {
+		var durations = new Date().getTime() - start
 		const $denyBox = document.querySelector('#area-deny-box')
 		$denyBox?.remove()
-		$denyBox || setTimeout(removeBlock, 300)
+		if (!$denyBox && durations < 60000) {
+			setTimeout(removeBlock, 300)
+		}
 	}
 	setTimeout(removeBlock, 100)
 })(window.$ || window.jQuery)
