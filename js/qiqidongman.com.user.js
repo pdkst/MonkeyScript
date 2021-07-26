@@ -5,7 +5,9 @@
 // @description  移除区域检查弹框
 // @author       pdkst
 // @match        https://m.qiqidongman.com/*
+// @match        https://*.qiqidongman.com/*
 // @grant        none
+// @run-at document-end
 // ==/UserScript==
 
 ;(function ($) {
