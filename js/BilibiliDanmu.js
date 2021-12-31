@@ -84,6 +84,35 @@ class DanmuConfig {
 		}
 	}
 }
+class DanmuInfoConfig {
+	id
+	type = 0
+
+	constructor(roomId) {
+		this.id = roomId || 1
+	}
+
+	async getAsync() {
+		return $.get(
+			'https://api.live.bilibili.com/xlive/web-room/v1/index/getDanmuInfo',
+			this
+		)
+	}
+
+	async getConfig() {
+		let response = await this.getAsync()
+		let data = response.data || {}
+		let list = data.host_list || []
+		let server = list[0] || {}
+		return {
+			domain: server.host || 'broadcastlv.chat.bilibili.com',
+			ws: server.ws_port || 2243,
+			wss: server.wss_port || 2244,
+			port: server.port || 2243,
+			token: data.token,
+		}
+	}
+}
 // go-common\app\service\main\broadcast\model\operation.go
 // https://github.com/xfgryujk/blivedm/blob/master/blivedm.py
 // https://github.com/lovelyyoshino/Bilibili-Live-API/blob/master/API.WebSocket.md
@@ -506,12 +535,17 @@ class BilibiliDanmu {
 	 */
 	sendAuthPack(roomId, uid, token) {
 		const authConfigFirst = JSON.stringify({
-			uid: uid || this.uid || 0,
+			// uid: uid || this.uid || 0,
+			// ??? 0 ok
+			uid: 0,
 			roomid: roomId || this.roomId,
-			token: token || this.token,
 			protover: 2,
 			platform: 'web',
+			clientver: '1.14.3',
+			type: 2,
+			key: token || this.token,
 		})
+		console.log('auth={}', authConfigFirst)
 		this.send(authConfigFirst, Operation.AUTH)
 	}
 	/**
@@ -550,6 +584,27 @@ class BilibiliDanmuUtil {
 		roomId = await new RoomInit(roomId).getConfig()
 		let config = await new DanmuConfig(roomId).getConfig()
 		config.uid = w.BilibiliLive.UID
+		window.danmu = new BilibiliDanmu(roomId, config)
+		danmu.listener = (type, msg) => {
+			if (type === 'msg') {
+				console.log('msg = ', msg)
+			}
+		}
+		await danmu.connect()
+	}
+}
+class BilibiliDanmuUtil2 {
+	static async init() {
+		if (!window.pako) {
+			await $.getScript(
+				'https://cdn.bootcdn.net/ajax/libs/pako/1.0.11/pako.min.js'
+			)
+		}
+		let w = window.unsafeWindow || window
+		let roomId = 23204664 || w.BilibiliLive.ROOMID
+		roomId = await new RoomInit2(roomId).getConfig()
+		let config = await new DanmuInfoConfig(roomId).getConfig()
+		config.uid = w.BilibiliLive.UID || 0
 		window.danmu = new BilibiliDanmu(roomId, config)
 		danmu.listener = (type, msg) => {
 			if (type === 'msg') {
