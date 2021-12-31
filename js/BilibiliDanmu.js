@@ -26,6 +26,33 @@ class RoomInit {
 		return roomResponse.data.room_id
 	}
 }
+class RoomInit2 {
+	room_id
+
+	constructor(roomId) {
+		this.room_id = roomId
+	}
+
+	get(callback) {
+		this.getAsync()
+			.success(callback)
+			.fail(function (data) {
+				console.log(data)
+			})
+	}
+
+	async getAsync() {
+		return $.get(
+			'https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom',
+			this
+		)
+	}
+
+	async getConfig() {
+		let roomResponse = await this.getAsync()
+		return roomResponse.data.room_info.room_id || 0
+	}
+}
 
 class DanmuConfig {
 	room_id
