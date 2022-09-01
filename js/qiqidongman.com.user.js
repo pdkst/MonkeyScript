@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         奇奇动漫屏蔽弹窗
 // @namespace    http://pdkst.github.io/MonkeyScript/qiqidongman.com.user.js
-// @version      0.1
+// @version      0.2
 // @description  移除区域检查弹框
 // @author       pdkst
 // @match        https://m.qiqidongman.com/*
+// @match        https://*.qiqidongman.com/*
 // @grant        none
+// @run-at document-end
 // ==/UserScript==
 
 ;(function ($) {
