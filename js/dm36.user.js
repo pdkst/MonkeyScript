@@ -2,7 +2,7 @@
 // @name         批量复制简单动漫bt链接
 // @namespace    http://pdkst.github.io/dm36
 // @version      0.0.3.beta
-// @description  批量复制简单动漫bt链接
+// @description  批量复制简单动漫bt链接，没有附带磁链的头
 // @author       pdkst
 // @match        *://www.36dm.club
 // @match        *://www.36dm.club/search.php*
@@ -21,8 +21,8 @@
             let link = element.href
             // https://www.36dm.club/show-5202dfcbfc06b0ba9b5f345bc429b10234616ed5.html
             let result = reg.exec(link)
-            if (result.length) {
-                array.push(result[0])
+            if (result && result.length) {
+                array.push('magnet:?xt=urn:btih:' + result[0])
             }
         }
         return array.join('\n')
