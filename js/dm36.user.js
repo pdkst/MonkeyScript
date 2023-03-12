@@ -2,7 +2,7 @@
 // @name         批量复制简单动漫bt链接
 // @namespace    http://pdkst.github.io/dm36
 // @version      0.0.3.beta
-// @description  批量复制简单动漫bt链接，没有附带磁链的头
+// @description  批量复制简单动漫bt链接;没有附带磁链的头
 // @author       pdkst
 // @match        *://www.36dm.club
 // @match        *://www.36dm.club/search.php*
