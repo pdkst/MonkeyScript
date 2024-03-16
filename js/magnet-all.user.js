@@ -1,64 +1,59 @@
 // ==UserScript==
 // @name         动漫花园批量下载(dmhy)
 // @namespace    http://pdkst.github.io/magnet-all
-// @version      0.4
+// @version      0.6
 // @description  为动漫花园（share.dmhy.org）增加批量下载的功能
 // @author       pdkst
 // @match        *://share.dmhy.org/*
-// @supportURL   https://github.com/pdkst/MonkeyScript/issues
 // @grant        none
-// @license      LGPLv3
 // ==/UserScript==
 
-function dmhy() {
-    this.debug = false;
-    var that = this;
-    this.log = function(s){
-        if(debug){
-            console.log('started...');
-        }
-    };
-    this.init = function () {
-        'use strict';
 
-        $('.nav_title:eq(1) .fl,.nav_title:eq(2)').append('<input class="is-sub-mag" type="checkbox">短链</input>');
-        var tds = $('#topic_list tr td:nth-child(1)');
-        tds.prepend('<input type="checkbox" class="magnet"/>');
-        tds.click(function () {
-            that.gatherMagnet();
-            console.log(that.gatherMagnet());
-        });
-        $('.nav_title:eq(1) .fl,.nav_title:eq(2)').append('<a class="select-all">[全选]</a>');
-        $('.select-all').click(function () {
-            if ($('.magnet:checkbox').length !== $('.magnet:checkbox:checked').length) {
-                $('.magnet:checkbox').attr('checked', true);
-            } else {
-                $('.magnet:checkbox').attr('checked', false);
-            }
-            that.gatherMagnet();
-        });
-        $('.nav_title:eq(1) .fl,.nav_title:eq(2)').append('<a class="download-all" style="color:green;">[下载(点击或右键"复制链接")]</a>');
-        $('.download-all').click(function (e) {
-            window.prompt("Copy to clipboard: Ctrl+C, Enter", that.gatherMagnet());
-            e.preventDefault();
-        });
+var option = {};
 
-    };
-    this.subMagnet = function (magStr) {
+; (function ($) {
+    "use strict";
+    var $title = $('.nav_title:eq(1) .fl,.nav_title:eq(2)');
+    var $tds = $('#topic_list tr td:nth-child(1)');
+    $title.append($('<input class="is-sub-mag" type="checkbox">短链</input>'));
+    $title.append('<a class="select-all">[全选]</a>');
+    $title.append('<a class="download-all" style="color:green;" title="点击或右键\"复制链接\"" alt="点击或右键\"复制链接\""><button>下载</button></a>');
+    $tds.prepend('<input type="checkbox" class="magnet"/>');
+
+    //短链
+    var $shortSet = $('.is-sub-mag');
+    $shortSet.click(function () {
+        $shortSet.prop('checked', $(this).prop('checked'));
+    });
+    //单选
+    var $magnet = $('.magnet:checkbox');
+    $magnet.click(function () {
+        $selectAll.prop('checked', !$('.magnet:checkbox:not(:checked)').length);
+    });
+    //全选
+    var $selectAll = $('a.select-all');
+    $selectAll.click(function () {
+        $magnet.prop('checked', $(this).prop('checked'));
+    });
+    //长链切短链
+    function subMagnet (magStr) {
         var trimMag = $.trim(magStr);
         if (!trimMag) return;
         return trimMag.substring(0, trimMag.indexOf('&'));
-    };
-    this.gatherMagnet = function () {
-        var magnets = [];
-        $('input.magnet:checkbox:checked').each(function () {
+    }
+    //收集磁链
+    function gatherMagnet (separator) {
+        var magnets = $('input.magnet:checkbox:checked').map(function (e, i) {
             var magnetStr = $(this).parents('tr').find('a.download-arrow.arrow-magnet').attr('href');
-            magnets.push($('.is-sub-mag:checkbox:checked').length ? that.subMagnet(magnetStr) : magnetStr);
-        });
-        var str = magnets.join(arguments[0] || '\n');
+            return $('.is-sub-mag:checkbox:checked').length ? subMagnet(magnetStr) : magnetStr;
+        }).get();
+        var str = magnets.join(separator || '\n');
         $('.download-all').attr('href', str);
         return str;
     };
-}
-new dmhy().init();
-//console.log(dmhy);
+    // 下载全部
+    $('.download-all').click(function (e) {
+        let magnets = gatherMagnet()
+        navigator.clipboard.writeText(magnets)
+    })
+})($ || window.jQuery);
