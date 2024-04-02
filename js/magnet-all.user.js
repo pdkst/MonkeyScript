@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         动漫花园批量下载(dmhy)
 // @namespace    http://pdkst.github.io/magnet-all
-// @version      0.6
+// @version      0.7
 // @description  为动漫花园（share.dmhy.org）增加批量下载的功能
 // @author       pdkst
 // @match        *://share.dmhy.org/*
@@ -33,7 +33,7 @@ var option = {};
     //全选
     var $selectAll = $('a.select-all');
     $selectAll.click(function () {
-        $magnet.prop('checked', $(this).prop('checked'));
+        $('.magnet:checkbox').attr('checked', true);
     });
     //长链切短链
     function subMagnet (magStr) {
